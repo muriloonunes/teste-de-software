@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,5 +29,6 @@ public class Cliente {
     private String telefone;
 
     @Column(name = "endereco")
+    @Size(max = 255, message = "O endereço não pode ter mais de 255 caracteres")
     private String endereco;
 }

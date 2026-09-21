@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,9 +25,11 @@ public class Pizza {
     private Long id;
 
     @Column(name = "nome", nullable = false, length = 80)
+    @Size(max = 200, message = "O nome da pizza não pode ter mais de 200 caracteres")
     private String name;
 
     @Column(name = "descricao", nullable = false)
+    @Size(max = 255, message = "A descrição não pode ter mais de 255 caracteres")
     private String descricao;
 
     @Column(name = "preco_base", nullable = false, precision = 10, scale = 2)
