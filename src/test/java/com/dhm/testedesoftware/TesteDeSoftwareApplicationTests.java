@@ -10,14 +10,15 @@ import com.dhm.testedesoftware.repository.PizzaRepository;
 import com.dhm.testedesoftware.repository.VendaRepository;
 import com.dhm.testedesoftware.service.PizzaService;
 import com.dhm.testedesoftware.service.VendaService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -32,31 +33,28 @@ class TesteDeSoftwareApplicationTests {
     @Mock
     private PizzaRepository pizzaRepository;
 
+    @Mock
+    private VendaService vendaService;
+
+    @BeforeEach
+    void setUp() {
+        vendaService = new VendaService(vendaRepository);
+    }
+
+
     @Test
-    void deveCalcularTotalDaVendaComPizzaEAdicional() {
-        Pizza pizza = new Pizza();
-        pizza.setValorBase(new BigDecimal("30.00"));
+    void deveSomarPizzasEAdicionais() {
+        Pizza pizza = pizzaComValor("40.00");
+        Adicional adicional = adicionalComValor("6.00");
 
-        ItemPedido itemPedido = new ItemPedido();
-        itemPedido.setPizza(pizza);
-        itemPedido.setTamanho(TamanhoPizza.MEDIA);
-        itemPedido.setQuantidade(2);
+        ItemAdicional extra = itemAdicional(adicional, 1);
+        extra.setQuantidade(2);
+        Venda venda = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.GRANDE, 2)), List.of(extra));
 
-        Adicional adicional = new Adicional();
-        adicional.setPreco(new BigDecimal("5.00"));
+        BigDecimal total = vendaService.calcularTotal(venda);
 
-        ItemAdicional itemAdicional = new ItemAdicional();
-        itemAdicional.setAdicional(adicional);
-        itemAdicional.setQuantidade(1);
-
-        Venda venda = new Venda();
-        venda.setPedidos(List.of(itemPedido));
-        venda.setAdicionais(List.of(itemAdicional));
-
-        BigDecimal resultado = new VendaService(vendaRepository).calcularTotal(venda);
-
-        assertEquals(new BigDecimal("95.00"), resultado);
-        assertEquals(new BigDecimal("90.00"), itemPedido.getValorPedido());
+        // (40.00 * 1.8 * 2) + (6.00 * 2) = 144.00 + 12.00
+        assertEquals(new BigDecimal("156.00"), total);
     }
 
     @Test
@@ -64,15 +62,9 @@ class TesteDeSoftwareApplicationTests {
         Pizza pizza = new Pizza();
         pizza.setValorBase(new BigDecimal("20.00"));
 
-        ItemPedido item = new ItemPedido();
-        item.setPizza(pizza);
-        item.setTamanho(TamanhoPizza.PEQUENA);
-        item.setQuantidade(3);
+       Venda venda= novaVenda(List.of(itemPedido(pizza,TamanhoPizza.PEQUENA,3)), List.of());
 
-        Venda venda = new Venda();
-        venda.setPedidos(List.of(item));
-
-        BigDecimal resultado = new VendaService(vendaRepository).calcularTotal(venda);
+        BigDecimal resultado = vendaService.calcularTotal(venda);
 
         assertEquals(new BigDecimal("60.00"), resultado);
     }
@@ -82,18 +74,16 @@ class TesteDeSoftwareApplicationTests {
         Pizza pizza = new Pizza();
         pizza.setValorBase(new BigDecimal("25.00"));
 
-        ItemPedido item = new ItemPedido();
-        item.setPizza(pizza);
-        item.setTamanho(TamanhoPizza.PEQUENA);
-        item.setQuantidade(1);
+        ItemPedido item = itemPedido(pizza,TamanhoPizza.PEQUENA,3);
 
-        Venda venda = new Venda();
+        Venda venda= novaVenda(List.of(item), List.of());
         venda.setPedidos(List.of(item));
+
         when(vendaRepository.save(any(Venda.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Venda resultado = new VendaService(vendaRepository).salvar(venda);
 
-        assertEquals(new BigDecimal("25.00"), resultado.getValor());
+        assertEquals(new BigDecimal("75.00"), resultado.getValor());
         verify(vendaRepository).save(venda);
     }
 
@@ -107,5 +97,52 @@ class TesteDeSoftwareApplicationTests {
 
         assertEquals("Calabresa", resultado.getName());
         verify(pizzaRepository).save(pizza);
+    }
+
+    @Test
+    void deveRetornarZeroParaVendaSemItens() {
+        Venda venda = novaVenda(List.of(), List.of());
+
+        BigDecimal total = vendaService.calcularTotal(venda);
+
+        assertEquals(new BigDecimal("0.00"), total);
+    }
+
+    private static Pizza pizzaComValor(String valor) {
+        Pizza pizza = new Pizza();
+        pizza.setName("Calabresa");
+        pizza.setDescricao("Calabresa tradicional");
+        pizza.setValorBase(new BigDecimal(valor));
+        return pizza;
+    }
+
+    private static ItemPedido itemPedido(Pizza pizza, TamanhoPizza tamanho, int quantidade) {
+        ItemPedido item = new ItemPedido();
+        item.setPizza(pizza);
+        item.setTamanho(tamanho);
+        item.setQuantidade(quantidade);
+        return item;
+    }
+
+    private static Adicional adicionalComValor(String valor) {
+        Adicional adicional = new Adicional();
+        adicional.setNome("Borda de catupiry");
+        adicional.setDescricao("Borda recheada");
+        adicional.setPreco(new BigDecimal(valor));
+        return adicional;
+    }
+
+    private static ItemAdicional itemAdicional(Adicional adicional, int quantidade) {
+        ItemAdicional item = new ItemAdicional();
+        item.setAdicional(adicional);
+        item.setQuantidade(quantidade);
+        return item;
+    }
+
+    private static Venda novaVenda(List<ItemPedido> pedidos, List<ItemAdicional> adicionais) {
+        Venda venda = new Venda();
+        venda.setPedidos(new ArrayList<>(pedidos));
+        venda.setAdicionais(new ArrayList<>(adicionais));
+        return venda;
     }
 }
