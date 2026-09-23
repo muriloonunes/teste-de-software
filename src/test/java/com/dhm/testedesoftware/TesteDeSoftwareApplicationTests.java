@@ -6,7 +6,6 @@ import com.dhm.testedesoftware.model.ItemPedido;
 import com.dhm.testedesoftware.model.Pizza;
 import com.dhm.testedesoftware.model.TamanhoPizza;
 import com.dhm.testedesoftware.model.Venda;
-import com.dhm.testedesoftware.repository.PizzaRepository;
 import com.dhm.testedesoftware.repository.VendaRepository;
 import com.dhm.testedesoftware.service.VendaService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,16 +30,12 @@ class TesteDeSoftwareApplicationTests {
     @Mock
     private VendaRepository vendaRepository;
 
-    @Mock
-    private PizzaRepository pizzaRepository;
-
     private VendaService vendaService;
 
     @BeforeEach
     void setUp() {
         vendaService = new VendaService(vendaRepository);
     }
-
 
     @Test
     void deveSomarPizzasEAdicionais() {
@@ -52,31 +49,6 @@ class TesteDeSoftwareApplicationTests {
 
         // (40.00 * 1.8 * 2) + (6.00 * 2) = 144.00 + 12.00
         assertEquals(new BigDecimal("156.00"), total);
-    }
-
-    @Test
-    void deveCalcularPizzaPequenaComQuantidade() {
-        Pizza pizza = pizzaComValor("20.00");
-
-        Venda venda = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.PEQUENA, 3)), List.of());
-
-        BigDecimal resultado = vendaService.calcularTotal(venda);
-
-        assertEquals(new BigDecimal("60.00"), resultado);
-    }
-
-    @Test
-    void deveSalvarVendaComValorCalculado() {
-        Pizza pizza = pizzaComValor("25.00");
-        ItemPedido item = itemPedido(pizza, TamanhoPizza.PEQUENA, 3);
-        Venda venda = novaVenda(List.of(item), List.of());
-
-        when(vendaRepository.save(any(Venda.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Venda resultado = vendaService.salvar(venda);
-
-        assertEquals(new BigDecimal("75.00"), resultado.getValor());
-        verify(vendaRepository).save(venda);
     }
 
     @Test
@@ -99,12 +71,50 @@ class TesteDeSoftwareApplicationTests {
     }
 
     @Test
+    void deveCalcularPizzaPequenaComQuantidade() {
+        Pizza pizza = pizzaComValor("20.00");
+
+        Venda venda = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.PEQUENA, 3)), List.of());
+
+        BigDecimal resultado = vendaService.calcularTotal(venda);
+
+        assertEquals(new BigDecimal("60.00"), resultado);
+    }
+
+    @Test
     void deveRetornarZeroParaVendaSemItens() {
         Venda venda = novaVenda(List.of(), List.of());
 
         BigDecimal total = vendaService.calcularTotal(venda);
 
         assertEquals(new BigDecimal("0.00"), total);
+    }
+
+    @Test
+    void deveSalvarVendaUsandoRepository() {
+        Pizza pizza = pizzaComValor("35.00");
+        Venda venda = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.GRANDE, 1)), List.of());
+
+        when(vendaRepository.save(any(Venda.class))).thenReturn(venda);
+
+        Venda salva = vendaService.salvar(venda);
+
+        verify(vendaRepository).save(venda);
+        assertEquals(new BigDecimal("63.00"), salva.getValor()); // 35.00 * 1.8
+    }
+
+    @Test
+    void deveBuscarVendaPorIdUsandoRepository() {
+        Pizza pizza = pizzaComValor("25.00");
+        Venda venda = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.PEQUENA, 1)), List.of());
+
+        when(vendaRepository.findById(1L)).thenReturn(Optional.of(venda));
+
+        Optional<Venda> encontrada = vendaService.buscarPorId(1L);
+
+        verify(vendaRepository).findById(1L);
+        assertTrue(encontrada.isPresent());
+        assertEquals(venda, encontrada.get());
     }
 
     private static Pizza pizzaComValor(String valor) {
