@@ -33,7 +33,6 @@ class TesteDeSoftwareApplicationTests {
     @Mock
     private PizzaRepository pizzaRepository;
 
-    @Mock
     private VendaService vendaService;
 
     @BeforeEach
