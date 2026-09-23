@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class ItemPedido {
     private TamanhoPizza tamanho;
 
     @Column(name = "quantidade", nullable = false)
+    @Min(value = 1, message = "A quantidade deve ser maior que zero.")
     private Integer quantidade = 1;
 
     @Column(name = "valor_item", nullable = false, precision = 10, scale = 2)

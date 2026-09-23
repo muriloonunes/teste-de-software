@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,7 @@ public class Pizza {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome", nullable = false, length = 80)
+    @Column(name = "nome", nullable = false, length = 200)
     @Size(max = 200, message = "O nome da pizza não pode ter mais de 200 caracteres")
     private String name;
 
@@ -33,5 +34,6 @@ public class Pizza {
     private String descricao;
 
     @Column(name = "preco_base", nullable = false, precision = 10, scale = 2)
+    @Positive(message = "O preço da pizza deve ser maior que zero.")
     private BigDecimal valorBase;
 }

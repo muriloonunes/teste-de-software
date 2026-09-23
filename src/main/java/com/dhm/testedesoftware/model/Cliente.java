@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +24,11 @@ public class Cliente {
     private Long id;
 
     @Column(name = "nome", nullable = false)
+    @NotBlank(message = "O nome do cliente é obrigatório.")
     private String nome;
 
     @Column(name = "telefone", nullable = false)
+    @NotBlank(message = "O telefone do cliente é obrigatório.")
     private String telefone;
 
     @Column(name = "endereco")

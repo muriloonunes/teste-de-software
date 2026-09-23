@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,5 +34,6 @@ public class Adicional {
     private String descricao;
 
     @Column(name = "preco", nullable = false, precision = 10, scale = 2)
+    @Positive(message = "O preço do adicional deve ser maior que zero.")
     private BigDecimal preco;
 }

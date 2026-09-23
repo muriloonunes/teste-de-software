@@ -2,6 +2,7 @@ package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class Pagamento {
     private String tipoPagamento;
 
     @Column(name = "parcelas", nullable = false)
+    @Min(value = 1, message = "O número mínimo de parcelas é 1.")
     @Max(value = 12, message = "O número máximo de parcelas é 12.")
     private int parcelas;
 }

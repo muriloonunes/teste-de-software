@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class ItemAdicional {
     private Adicional adicional;
 
     @Column(name = "quantidade", nullable = false)
+    @Min(value = 1, message = "A quantidade deve ser maior que zero.")
     private Integer quantidade;
 
     @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
