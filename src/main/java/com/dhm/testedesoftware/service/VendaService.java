@@ -29,6 +29,10 @@ public class VendaService {
         return vendaRepository.findAll();
     }
 
+    public List<Venda> historico(Long usuarioId) {
+        return vendaRepository.findByUsuarioIdOrderByIdDesc(usuarioId);
+    }
+
     public Optional<Venda> buscarPorId(Long id) {
         return vendaRepository.findById(id);
     }

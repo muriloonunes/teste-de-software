@@ -13,4 +13,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VendaRepository extends JpaRepository<Venda, Long> {
+    java.util.List<com.dhm.testedesoftware.model.Venda> findByUsuarioIdOrderByIdDesc(Long usuarioId);
 }

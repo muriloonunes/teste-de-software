@@ -34,6 +34,10 @@ public class Venda {
     private Cliente cliente;
 
     @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
+    @ManyToOne
     @JoinColumn(name = "pagamento_id")
     private Pagamento pagamento;
 
