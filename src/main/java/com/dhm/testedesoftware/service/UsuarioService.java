@@ -1,14 +1,14 @@
 package com.dhm.testedesoftware.service;
 
-import com.dhm.testedesoftware.model.dto.UsuarioRequestDTO;
-import com.dhm.testedesoftware.model.dto.UsuarioResponseDTO;
+import com.dhm.testedesoftware.exception.CredenciaisInvalidasException;
+import com.dhm.testedesoftware.exception.EmailJaCadastradoException;
 import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Usuario;
+import com.dhm.testedesoftware.model.dto.UsuarioRequestDTO;
+import com.dhm.testedesoftware.model.dto.UsuarioResponseDTO;
 import com.dhm.testedesoftware.repository.UsuarioRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class UsuarioService {
 
     public UsuarioResponseDTO criar(UsuarioRequestDTO dto) {
         if (repository.existsByEmailIgnoreCase(dto.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um usuário com este e-mail.");
+            throw new EmailJaCadastradoException("Já existe um usuário com este e-mail.");
         }
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());
@@ -35,6 +35,9 @@ public class UsuarioService {
 
     public UsuarioResponseDTO atualizar(Long id, UsuarioRequestDTO dto) {
         Usuario usuario = buscarPorId(id);
+        if (!usuario.getEmail().equalsIgnoreCase(dto.email()) && repository.existsByEmailIgnoreCase(dto.email())) {
+            throw new EmailJaCadastradoException("Já existe um usuário com este e-mail.");
+        }
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
         usuario.setSenha(passwordEncoder.encode(dto.senha()));
@@ -70,9 +73,9 @@ public class UsuarioService {
     public Usuario autenticar(String email, String senha) {
         Usuario usuario = repository.findByEmailIgnoreCase(email)
                 .filter(Usuario::isAtivo)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos."));
+                .orElseThrow(() -> new CredenciaisInvalidasException("E-mail ou senha inválidos."));
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos.");
+            throw new CredenciaisInvalidasException("E-mail ou senha inválidos.");
         }
         return usuario;
     }
