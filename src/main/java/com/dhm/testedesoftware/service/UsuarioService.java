@@ -1,5 +1,6 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Usuario;
 import com.dhm.testedesoftware.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -27,9 +27,22 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
-    public List<Usuario> listar() { return repository.findAll(); }
-    public Optional<Usuario> buscarPorId(Long id) { return repository.findById(id); }
-    public void excluir(Long id) { repository.deleteById(id); }
+    public List<Usuario> listar() {
+        return repository.findAll();
+    }
+
+    public Usuario buscarPorId(Long id) {
+        return repository.findById(id).orElseThrow(
+                () -> new EntidadeNaoEncontrada("Usuário não encontrado com o id: " + id)
+        );
+    }
+
+    public void excluir(Long id) {
+        if (!repository.existsById(id)) {
+            throw new EntidadeNaoEncontrada("Usuário não encontrado com o id: " + id);
+        }
+        repository.deleteById(id);
+    }
 
     public Usuario autenticar(String email, String senha) {
         Usuario usuario = repository.findByEmailIgnoreCase(email)

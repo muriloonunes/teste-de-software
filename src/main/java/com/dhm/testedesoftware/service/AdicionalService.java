@@ -1,11 +1,11 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Adicional;
 import com.dhm.testedesoftware.repository.AdicionalRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AdicionalService {
@@ -24,11 +24,16 @@ public class AdicionalService {
         return adicionalRepository.findAll();
     }
 
-    public Optional<Adicional> buscarPorId(Long id) {
-        return adicionalRepository.findById(id);
+    public Adicional buscarPorId(Long id) {
+        return adicionalRepository.findById(id).orElseThrow(
+                () -> new EntidadeNaoEncontrada("Adicional não encontrado com id: " + id)
+        );
     }
 
     public void excluir(Long id) {
+        if (!adicionalRepository.existsById(id)) {
+            throw new EntidadeNaoEncontrada("Adicional não encontrado com id: " + id);
+        }
         adicionalRepository.deleteById(id);
     }
 }

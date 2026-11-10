@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class AuthController {
     private final UsuarioService service;
-    public AuthController(UsuarioService service) { this.service = service; }
+
+    public AuthController(UsuarioService service) {
+        this.service = service;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@Valid @RequestBody LoginRequest request) {
@@ -23,5 +26,6 @@ public class AuthController {
     public record LoginRequest(
             @Email @NotBlank String email,
             @NotBlank String senha
-    ) {}
+    ) {
+    }
 }

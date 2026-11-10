@@ -1,11 +1,11 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Cliente;
 import com.dhm.testedesoftware.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ClienteService {
@@ -24,11 +24,16 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
-    public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRepository.findById(id);
+    public Cliente buscarPorId(Long id) {
+        return clienteRepository.findById(id).orElseThrow(
+                () -> new EntidadeNaoEncontrada("Cliente não encontrado com o id: " + id)
+        );
     }
 
     public void excluir(Long id) {
+        if (!clienteRepository.existsById(id)) {
+            throw new EntidadeNaoEncontrada("Cliente não encontrado com o id: " + id);
+        }
         clienteRepository.deleteById(id);
     }
 }

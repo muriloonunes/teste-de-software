@@ -1,11 +1,11 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Pizza;
 import com.dhm.testedesoftware.repository.PizzaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PizzaService {
@@ -24,11 +24,16 @@ public class PizzaService {
         return pizzaRepository.findAll();
     }
 
-    public Optional<Pizza> buscarPorId(Long id) {
-        return pizzaRepository.findById(id);
+    public Pizza buscarPorId(Long id) {
+        return pizzaRepository.findById(id).orElseThrow(
+                () -> new EntidadeNaoEncontrada("Pizza não encontrada com o id: " + id)
+        );
     }
 
     public void excluir(Long id) {
+        if (!pizzaRepository.existsById(id)) {
+            throw new EntidadeNaoEncontrada("Pizza não encontrada com o id: " + id);
+        }
         pizzaRepository.deleteById(id);
     }
 }

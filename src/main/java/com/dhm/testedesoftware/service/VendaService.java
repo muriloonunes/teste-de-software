@@ -1,5 +1,6 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.ItemAdicional;
 import com.dhm.testedesoftware.model.ItemPedido;
 import com.dhm.testedesoftware.model.Venda;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class VendaService {
@@ -33,11 +33,16 @@ public class VendaService {
         return vendaRepository.findByUsuarioIdOrderByIdDesc(usuarioId);
     }
 
-    public Optional<Venda> buscarPorId(Long id) {
-        return vendaRepository.findById(id);
+    public Venda buscarPorId(Long id) {
+        return vendaRepository.findById(id).orElseThrow(
+                () -> new EntidadeNaoEncontrada("Venda não encontrada com o id: " + id)
+        );
     }
 
     public void excluir(Long id) {
+        if (!vendaRepository.existsById(id)) {
+            throw new EntidadeNaoEncontrada("Venda não encontrada com o id: " + id);
+        }
         vendaRepository.deleteById(id);
     }
 
