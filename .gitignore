@@ -1,33 +1,138 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# ==============================================================================
+# Monorepo .gitignore (teste-de-software)
+# Covers: Java / Spring Boot / Maven (backend) + Angular / Node.js (frontend) + IDEs
+# ==============================================================================
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# ------------------------------------------------------------------------------
+# Operating System & Environment
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
 
-### IntelliJ IDEA ###
-.idea
+# Environment variables & local secrets
+.env
+.env.local
+.env.*.local
+*.local
+
+# ------------------------------------------------------------------------------
+# IDEs & Editors
+# ------------------------------------------------------------------------------
+# IntelliJ IDEA
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaryStates
+.idea/**/shelf/
+.idea/**/sonarlint/
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/httpRequests/
+.idea/**/queries/
 *.iws
 *.iml
 *.ipr
+out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Nested IDE directories (all IDE configs should stay at monorepo root)
+backend/.idea/
+frontend/.idea/
 
-### VS Code ###
-.vscode/
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/
+*.code-workspace
+
+# Eclipse / Spring Tool Suite (STS)
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ------------------------------------------------------------------------------
+# Backend: Java / Spring Boot / Maven
+# ------------------------------------------------------------------------------
+# Compiled classes & build outputs
+target/
+**/target/
+*.class
+
+# Maven wrapper jar (scripts auto-download if missing)
+.mvn/wrapper/maven-wrapper.jar
+**/.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Database files (H2 local database files)
+*.mv.db
+*.trace.db
+backend/data/*.db
+backend/data/*.trace.db
+
+# JVM Crash logs & general logs
+*.log
+**/logs/
+hs_err_pid*
+replay_pid*
+
+# ------------------------------------------------------------------------------
+# Frontend: Angular / TypeScript / Node.js
+# ------------------------------------------------------------------------------
+# Node dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Angular build output & cache
+.angular/
+**/.angular/
+dist/
+**/dist/
+tmp/
+**/tmp/
+out-tsc/
+**/out-tsc/
+bazel-out/
+.sass-cache/
+
+# Testing & Coverage
+coverage/
+**/coverage/
+.nyc_output/
+testem.log
+__screenshots__/
+
+# Linter & Formatter caches
+.eslintcache
+.prettiercache
+
+# ------------------------------------------------------------------------------
+# AI Agent & Internal Tooling
+# ------------------------------------------------------------------------------
+skills/
+.gemini/

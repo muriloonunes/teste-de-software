@@ -1,2 +1,8 @@
-/mvnw text eol=lf
+# Auto-detect text files and normalize line endings to LF
+* text=auto
+
+# Scripts and wrappers
+/backend/mvnw text eol=lf
+*.sh text eol=lf
 *.cmd text eol=crlf
+*.bat text eol=crlf
