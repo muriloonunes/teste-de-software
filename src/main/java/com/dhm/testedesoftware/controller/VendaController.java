@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.controller;
 
-import com.dhm.testedesoftware.model.Venda;
+import com.dhm.testedesoftware.model.dto.VendaRequestDTO;
+import com.dhm.testedesoftware.model.dto.VendaResponseDTO;
 import com.dhm.testedesoftware.service.VendaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,23 +21,23 @@ public class VendaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Venda>> listar() {
-        return ResponseEntity.ok(service.listar());
+    public ResponseEntity<List<VendaResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listarDTO());
     }
 
     @GetMapping("/historico/{usuarioId}")
-    public ResponseEntity<List<Venda>> historico(@PathVariable Long usuarioId) {
-        return ResponseEntity.ok(service.historico(usuarioId));
+    public ResponseEntity<List<VendaResponseDTO>> historico(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(service.historicoDTO(usuarioId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Venda> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<VendaResponseDTO> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarDTOPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Venda> criar(@Valid @RequestBody Venda venda) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(venda));
+    public ResponseEntity<VendaResponseDTO> criar(@Valid @RequestBody VendaRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @DeleteMapping("/{id}")

@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.controller;
 
-import com.dhm.testedesoftware.model.Adicional;
+import com.dhm.testedesoftware.model.dto.AdicionalRequestDTO;
+import com.dhm.testedesoftware.model.dto.AdicionalResponseDTO;
 import com.dhm.testedesoftware.service.AdicionalService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,24 +21,23 @@ public class AdicionalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Adicional>> listar() {
-        return ResponseEntity.ok(service.listar());
+    public ResponseEntity<List<AdicionalResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listarDTO());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Adicional> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<AdicionalResponseDTO> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarDTOPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Adicional> criar(@Valid @RequestBody Adicional item) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(item));
+    public ResponseEntity<AdicionalResponseDTO> criar(@Valid @RequestBody AdicionalRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Adicional> atualizar(@PathVariable Long id, @Valid @RequestBody Adicional item) {
-        item.setId(id);
-        return ResponseEntity.ok(service.salvar(item));
+    public ResponseEntity<AdicionalResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody AdicionalRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")

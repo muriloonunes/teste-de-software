@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.controller;
 
-import com.dhm.testedesoftware.model.Usuario;
+import com.dhm.testedesoftware.model.dto.UsuarioRequestDTO;
+import com.dhm.testedesoftware.model.dto.UsuarioResponseDTO;
 import com.dhm.testedesoftware.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,24 +21,23 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> listar() {
-        return ResponseEntity.ok(service.listar());
+    public ResponseEntity<List<UsuarioResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listarDTO());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<UsuarioResponseDTO> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarDTOPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> criar(@Valid @RequestBody Usuario usuario) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(usuario));
+    public ResponseEntity<UsuarioResponseDTO> criar(@Valid @RequestBody UsuarioRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizar(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
-        usuario.setId(id);
-        return ResponseEntity.ok(service.salvar(usuario));
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")

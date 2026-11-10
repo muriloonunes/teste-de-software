@@ -1,6 +1,7 @@
 package com.dhm.testedesoftware.controller;
 
-import com.dhm.testedesoftware.model.Cliente;
+import com.dhm.testedesoftware.model.dto.ClienteRequestDTO;
+import com.dhm.testedesoftware.model.dto.ClienteResponseDTO;
 import com.dhm.testedesoftware.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,24 +21,23 @@ public class ClienteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> listar() {
-        return ResponseEntity.ok(service.listar());
+    public ResponseEntity<List<ClienteResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listarDTO());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<ClienteResponseDTO> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarDTOPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> criar(@Valid @RequestBody Cliente cliente) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(cliente));
+    public ResponseEntity<ClienteResponseDTO> criar(@Valid @RequestBody ClienteRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Long id, @Valid @RequestBody Cliente cliente) {
-        cliente.setId(id);
-        return ResponseEntity.ok(service.salvar(cliente));
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")

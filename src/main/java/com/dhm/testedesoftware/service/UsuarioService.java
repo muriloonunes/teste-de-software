@@ -1,5 +1,7 @@
 package com.dhm.testedesoftware.service;
 
+import com.dhm.testedesoftware.model.dto.UsuarioRequestDTO;
+import com.dhm.testedesoftware.model.dto.UsuarioResponseDTO;
 import com.dhm.testedesoftware.exception.EntidadeNaoEncontrada;
 import com.dhm.testedesoftware.model.Usuario;
 import com.dhm.testedesoftware.repository.UsuarioRepository;
@@ -19,22 +21,43 @@ public class UsuarioService {
         this.repository = repository;
     }
 
-    public Usuario salvar(Usuario usuario) {
-        if (usuario.getId() == null && repository.existsByEmailIgnoreCase(usuario.getEmail())) {
+    public UsuarioResponseDTO criar(UsuarioRequestDTO dto) {
+        if (repository.existsByEmailIgnoreCase(dto.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um usuário com este e-mail.");
         }
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        return repository.save(usuario);
+        Usuario usuario = new Usuario();
+        usuario.setNome(dto.nome());
+        usuario.setEmail(dto.email());
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
+        usuario.setAtivo(dto.ativo() == null || dto.ativo());
+        return UsuarioResponseDTO.fromEntity(repository.save(usuario));
     }
 
-    public List<Usuario> listar() {
-        return repository.findAll();
+    public UsuarioResponseDTO atualizar(Long id, UsuarioRequestDTO dto) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setNome(dto.nome());
+        usuario.setEmail(dto.email());
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
+        if (dto.ativo() != null) {
+            usuario.setAtivo(dto.ativo());
+        }
+        return UsuarioResponseDTO.fromEntity(repository.save(usuario));
+    }
+
+    public List<UsuarioResponseDTO> listarDTO() {
+        return repository.findAll().stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .toList();
     }
 
     public Usuario buscarPorId(Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new EntidadeNaoEncontrada("Usuário não encontrado com o id: " + id)
         );
+    }
+
+    public UsuarioResponseDTO buscarDTOPorId(Long id) {
+        return UsuarioResponseDTO.fromEntity(buscarPorId(id));
     }
 
     public void excluir(Long id) {
@@ -52,5 +75,9 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos.");
         }
         return usuario;
+    }
+
+    public UsuarioResponseDTO autenticarDTO(String email, String senha) {
+        return UsuarioResponseDTO.fromEntity(autenticar(email, senha));
     }
 }
