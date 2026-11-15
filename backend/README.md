@@ -1,57 +1,45 @@
-# Pizzaria DHM — Projeto N2
+# Backend — Bella Pizza
 
-Sistema de vendas de pizzas desenvolvido para a disciplina de Testes de Software
-(FATESG). A aplicação usa arquitetura cliente-servidor: uma API REST em Spring
-Boot persiste os dados em H2 e uma interface web estática consome a API.
+API REST em Java 25 e Spring Boot 4 para o sistema de vendas da Bella Pizza.
 
 ## Funcionalidades
 
-- CRUD de **Pizzas** (`/api/pizzas`), com nome, descrição e preço-base.
-- CRUD de **Adicionais** (`/api/adicionais`), com nome, descrição e preço.
-- CRUD de **Clientes** (`/api/clientes`) e consulta/exclusão de vendas
-  (`/api/vendas`); o total é calculado no servidor considerando tamanho,
-  quantidade e adicionais.
-- CRUD de **Usuários** (`/api/usuarios`) e login (`POST /api/auth/login`).
-  Senhas são armazenadas com BCrypt e nunca são retornadas pela API.
-- Interface disponível em `http://localhost:8080/`, com cardápio e tela de
-  login.
-
-## Tecnologias
-
-Java 25, Spring Boot 4, Spring Web MVC, Spring Data JPA, Bean Validation,
-H2 Database, BCrypt, JUnit 5 e Mockito.
+- CRUD de pizzas: `GET/POST /api/pizzas`, `GET/PUT/DELETE /api/pizzas/{id}`.
+- CRUD de adicionais, clientes, pagamentos e usuários.
+- Login em `POST /api/auth/login`, com senha protegida por BCrypt.
+- Criação de vendas em `POST /api/vendas` e histórico por usuário em
+  `GET /api/vendas/historico/{usuarioId}`.
+- Validação de DTOs, tratamento centralizado de erros e cálculo de total por
+  tamanho, quantidade e adicionais.
 
 ## Execução
 
-Pré-requisito: JDK 25. Na raiz do projeto:
+Na raiz do projeto:
 
 ```bash
+docker compose up -d
+cd backend
 ./mvnw spring-boot:run
 ```
 
-Abra `http://localhost:8080/`. Para cadastrar o primeiro usuário:
-
-```bash
-curl -X POST http://localhost:8080/api/usuarios \
-  -H 'Content-Type: application/json' \
-  -d '{"nome":"Administrador","email":"admin@pizzaria.com","senha":"123456","ativo":true}'
-```
-
-Depois, faça login em `http://localhost:8080/`.
+O banco de desenvolvimento é PostgreSQL 17 no Docker (`localhost:5432`).
+As propriedades de conexão podem ser substituídas por `DB_URL`,
+`DB_USERNAME` e `DB_PASSWORD`.
 
 ## Testes
-
-Execute os testes automatizados com:
 
 ```bash
 ./mvnw test
 ```
 
-Os testes unitários cobrem o cálculo do total para tamanhos, quantidades,
-adicionais, venda vazia e persistência. Os fluxos sugeridos para a entrega
-E2E/API são: cadastrar e consultar uma pizza; autenticar e criar uma venda.
+O projeto contém testes unitários JUnit/Mockito, testes de API REST-assured e
+dois fluxos E2E Selenium. Para executar os E2E com o frontend, inicie também
+o Angular (`cd ../frontend && npm start`) e use:
 
-## Integrantes
+```bash
+./mvnw -Dfrontend.url=http://localhost:4200 test
+```
 
-- Murilo Nunes
-- Hartur Sales Xavier
+Se o Angular ou Chrome não estiverem disponíveis, os testes Selenium são
+automaticamente ignorados; os testes unitários e de API continuam sendo
+executados.

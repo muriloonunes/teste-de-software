@@ -1,135 +1,82 @@
-# Pizzaria DHM — Teste de Software
+# Bella Pizza — Projeto N2
 
-Projeto desenvolvido para a prova N2 de Teste de Software.
+Sistema full stack de vendas de pizzas para a disciplina de Testes de
+Software. O backend é uma API REST em Spring Boot e o frontend é uma SPA
+Angular que consome a API para apresentar o cardápio, autenticar usuários,
+montar o carrinho, finalizar vendas e consultar o histórico.
 
-## 👥 Alunos
+## Integrantes
+
 - [Davy Lopes Oliveira](https://github.com/DavyL0)
 - [Hartur Sales Xavier](https://github.com/hartur-sales)
 - [Murilo Nunes De Oliveira](https://github.com/muriloonunes)
 
-## 📁 Estrutura do Monorepo
+## Tecnologias
 
-```plaintext
-teste-de-software/
-├── .idea/
-│   └── runConfigurations/    # Configurações de execução compartilhadas da IDE
-├── backend/                  # API REST em Java 25 & Spring Boot 4
-│   ├── src/                  # Código-fonte Java e resources
-│   ├── pom.xml               # Configuração do Maven
-│   ├── mvnw                  # Maven Wrapper (Linux/macOS)
-│   └── mvnw.cmd              # Maven Wrapper (Windows)
-├── frontend/                 # Aplicação SPA em Angular & TypeScript
-│   ├── src/                  # Código-fonte TypeScript/HTML/CSS
-│   ├── angular.json          # Configuração do Angular CLI
-│   └── package.json          # Dependências e scripts npm
-├── docker-compose.yml        # Orquestração do PostgreSQL em container
-├── .editorconfig             # Padronização de formatação (Backend 4 espaços, Frontend 2 espaços)
-├── .gitattributes            # Normalização de finais de linha (LF/CRLF)
-└── .gitignore                # Regras unificadas para Java, Angular, IDEs e SO
+Java 25, Spring Boot 4, Spring Data JPA, PostgreSQL 17, Docker, Angular 22,
+TypeScript, JUnit 5, Mockito, REST-assured e Selenium.
+
+## Estrutura
+
+```text
+backend/    API REST, entidades, serviços, persistência e testes
+frontend/   SPA Angular; telas em frontend/src/app/screens
+docker-compose.yml
 ```
 
----
+## Funcionalidades
 
-## 🐳 Banco de Dados (PostgreSQL no Docker)
+- CRUD de pizzas com nome, descrição, categoria e preço.
+- CRUD de adicionais, clientes, pagamentos e usuários.
+- Login com autenticação BCrypt.
+- Cardápio com busca e filtro por categoria.
+- Carrinho com quantidade, adicionais e total.
+- Finalização de venda e histórico por usuário.
+- Validação de entradas e respostas de erro padronizadas.
 
-O projeto utiliza **PostgreSQL 17** executado via Docker através do [`docker-compose.yml`](docker-compose.yml).
+## Execução
 
-### Dados de Conexão
+Pré-requisitos: JDK 25, Node.js/npm e Docker.
 
-| Propriedade | Valor |
-| :--- | :--- |
-| **Host** | `localhost` |
-| **Porta** | `5432` |
-| **Database** | `pizzaria_db` |
-| **Usuário** | `postgres` |
-| **Senha** | `postgres` |
-| **Nome do Container** | `pizzaria-teste-software` |
-
----
-
-### Comandos de Terminal
-
-Execute estes comandos na raiz do monorepo:
-
-#### 1. Subir o banco de dados (em segundo plano):
 ```bash
 docker compose up -d
-```
 
-#### 2. Derrubar o container:
-```bash
-docker compose down
-```
-> [!NOTE]
-> Seus dados permanecem salvos no volume `postgres_data`. Para apagar o banco completamente e recriar do zero, use a flag `-v`:
-> ```bash
-> docker compose down -v
-> ```
-
-#### 3. Comandos úteis:
-```bash
-docker compose ps          # Verificar se o container está saudável (healthy)
-docker compose logs -f     # Acompanhar logs do Postgres em tempo real
-docker compose restart     # Reiniciar o banco
-```
----
-
-## 💡 Integração com o IntelliJ IDEA
-
-As configurações de execução do projeto já estão salvas e versionadas em `.idea/runConfigurations/`, disponíveis automaticamente para qualquer desenvolvedor que abrir o repositório na IDE:
-
-1. **Subida Automática (*Before Launch*)**:
-   - Ao executar a aplicação Spring Boot (**`TesteDeSoftwareApplication`**), o IntelliJ dispara automaticamente a tarefa **`docker banco`** antes de iniciar o backend.
-   - O container do PostgreSQL sobe sozinho em background, sem necessidade de comandos manuais.
-
-2. **Play direto no arquivo (Gutter Icons)**:
-   - Ao abrir o [`docker-compose.yml`](docker-compose.yml), clique nas setas de play verdes (**▶▶**) na margem esquerda das linhas `services:` ou `postgres:` para iniciar ou reiniciar o serviço.
-
-3. **Painel de Serviços (*Services Tool Window*)**:
-   - Pressione `Alt + 8` (ou menu `View` > `Tool Windows` > `Services`).
-   - Na seção **Docker**, você tem botões de *Start/Stop/Restart*, visualização de logs em tempo real e terminal direto no container.
-
-4. **Database Tools**:
-   - Abra a aba **Database** à direita no IntelliJ (`+` > **Data Source** > **PostgreSQL**).
-   - Conecte em `localhost:5432`, database `pizzaria_db`, user `postgres` e senha `postgres` para inspecionar tabelas e rodar queries graficamente.
-
----
-
-## 🚀 Como Executar o Projeto
-
-### 1. Backend (Spring Boot)
-Requisitos: JDK 25 (ou compatível) e Docker em execução.
-
-```bash
-# 1. Garanta que o banco está rodando (caso não execute pelo IntelliJ)
-docker compose up -d
-
-# 2. Inicie a API
 cd backend
 ./mvnw spring-boot:run
 ```
-A API estará disponível em `http://localhost:8080`.
 
-Executar testes do backend:
-```bash
-cd backend
-./mvnw test
-```
-
-### 2. Frontend (Angular)
-Requisitos: Node.js (v20+) e npm.
+Em outro terminal:
 
 ```bash
 cd frontend
 npm install
 npm start
 ```
-A aplicação estará disponível em `http://localhost:4200`.
 
-Executar testes do frontend:
+Acesse `http://localhost:4200`. O backend fica em `http://localhost:8080`.
+
+## Testes automatizados
+
+Testes do backend:
+
 ```bash
-cd frontend
-npm test
+cd backend
+./mvnw test
 ```
 
----
+O projeto contém:
+
+- JUnit/Mockito: cálculo de venda, tamanhos, quantidades, adicionais,
+  persistência e busca.
+- REST-assured: cadastro de pizza e validação de preço.
+- Selenium: filtro do cardápio e atualização do contador do carrinho.
+
+Para executar os testes Selenium com o frontend aberto:
+
+```bash
+./mvnw -Dfrontend.url=http://localhost:4200 test
+```
+
+Os testes Selenium são ignorados automaticamente quando o Angular ou o
+Chrome não estão disponíveis; os testes unitários e de API continuam sendo
+executados.

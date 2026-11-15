@@ -16,6 +16,10 @@ public record PizzaRequestDTO(
         @Size(max = 255, message = "A descrição não pode ter mais de 255 caracteres")
         String descricao,
 
+        @NotBlank(message = "A categoria da pizza é obrigatória.")
+        @Size(max = 50, message = "A categoria não pode ter mais de 50 caracteres.")
+        String categoria,
+
         @NotNull(message = "O preço da pizza é obrigatório.")
         @Positive(message = "O preço da pizza deve ser maior que zero.")
         BigDecimal valorBase

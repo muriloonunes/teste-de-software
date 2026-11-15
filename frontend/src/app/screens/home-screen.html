@@ -1,0 +1,50 @@
+<header class="topbar">
+  <a class="brand" href="#inicio"><span>🍕</span>Bella <b>Pizza</b></a>
+  <nav><a href="#cardapio">Cardápio</a><a href="#sobre">Sobre nós</a><a href="#historico">Pedidos</a></nav>
+  <div class="actions">
+    <button class="login-button" (click)="usuario ? logout() : abrirLogin()">{{ usuario ? 'Sair' : 'Entrar' }}</button>
+    <button class="cart-button" (click)="carrinhoAberto = !carrinhoAberto">🛒 <strong>{{ quantidadeCarrinho }}</strong></button>
+  </div>
+</header>
+
+<main>
+  <section id="inicio" class="hero">
+    <div><small>FEITA COM PAIXÃO DESDE 1998</small><h1>A verdadeira pizza artesanal, <em>quentinha</em> na sua mesa.</h1>
+      <p>Ingredientes selecionados, massa de fermentação lenta e o sabor autêntico do forno a lenha.</p>
+      <a class="primary" href="#cardapio">Ver cardápio ↓</a>
+    </div><div class="hero-pizza">🍕</div>
+  </section>
+
+  <section id="cardapio" class="menu">
+    <div class="section-title"><div><small>ESCOLHA SEU SABOR</small><h2>Nosso cardápio</h2></div>
+      <input id="search" [(ngModel)]="busca" placeholder="🔎 Buscar pizza..."></div>
+    <div class="categories"><button *ngFor="let item of categorias" [class.active]="categoria === item" (click)="categoria = item">{{ item }}</button></div>
+    <div class="pizza-grid">
+      <article class="pizza-card" *ngFor="let pizza of pizzasFiltradas">
+        <div class="pizza-image">🍕</div><div class="pizza-content"><small>{{ pizza.categoria }}</small><h3>{{ pizza.name }}</h3>
+        <p>{{ pizza.descricao }}</p><footer><strong>{{ pizza.valorBase | currency:'BRL' }}</strong><button (click)="adicionar(pizza)">+</button></footer></div>
+      </article>
+      <p *ngIf="!pizzasFiltradas.length" class="empty">Nenhuma pizza encontrada no cardápio.</p>
+    </div>
+  </section>
+
+  <section id="sobre" class="about"><small>A NOSSA HISTÓRIA</small><h2>Mais que pizza.<br>Uma mesa cheia de histórias.</h2><p>Na Bella Pizza, cada receita é preparada com cuidado, usando ingredientes selecionados e muita paixão.</p></section>
+
+  <section id="historico" class="history" *ngIf="usuario"><h2>Meus pedidos</h2>
+    <article *ngFor="let pedido of pedidos"><strong>Pedido #{{ pedido.id }}</strong><span>{{ pedido.valor | currency:'BRL' }}</span><p>{{ pedido.pedidos.length }} pizza(s)</p></article>
+    <p *ngIf="!pedidos.length">Você ainda não fez nenhum pedido.</p>
+  </section>
+
+  <aside class="cart-panel" *ngIf="carrinhoAberto">
+    <button class="close" (click)="carrinhoAberto = false">×</button><h2>Seu pedido</h2>
+    <div *ngFor="let item of carrinho; let i = index" class="cart-item"><span>🍕 {{ item.pizza.name }}<small>{{ item.tamanho }}</small></span><div><button (click)="alterarQuantidade(i, -1)">−</button>{{ item.quantidade }}<button (click)="alterarQuantidade(i, 1)">+</button></div><strong>{{ precoItem(item) | currency:'BRL' }}</strong><button class="remove" (click)="remover(i)">×</button></div>
+    <p *ngIf="!carrinho.length" class="empty">Seu carrinho está vazio.</p><div class="total"><span>Total</span><strong>{{ subtotal | currency:'BRL' }}</strong></div>
+    <div class="delivery"><input [(ngModel)]="entrega.telefone" placeholder="Telefone"><input [(ngModel)]="entrega.endereco" placeholder="Endereço de entrega"><button class="primary full" (click)="finalizar()">Finalizar pedido</button></div>
+  </aside>
+</main>
+
+<div class="modal-backdrop" *ngIf="loginAberto"><section class="login-modal"><button class="close" (click)="loginAberto = false">×</button><h2>Bem-vindo à Bella Pizza</h2><p>Entre para acompanhar seus pedidos.</p>
+  <input [(ngModel)]="login.email" type="email" placeholder="E-mail"><input [(ngModel)]="login.senha" type="password" placeholder="Senha"><button class="primary full" (click)="autenticar()">Entrar</button>
+  <hr><h3>Primeiro acesso?</h3><input [(ngModel)]="cadastro.nome" placeholder="Nome completo"><input [(ngModel)]="cadastro.email" type="email" placeholder="E-mail"><input [(ngModel)]="cadastro.senha" type="password" placeholder="Senha (mínimo 6 caracteres)"><button class="secondary full" (click)="cadastrar()">Criar conta</button><p class="message">{{ mensagem }}</p>
+</section></div>
+<p class="global-message" *ngIf="mensagem && !loginAberto">{{ mensagem }}</p>

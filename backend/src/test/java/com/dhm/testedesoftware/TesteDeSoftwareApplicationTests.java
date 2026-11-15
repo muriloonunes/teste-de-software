@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -110,17 +109,17 @@ class TesteDeSoftwareApplicationTests {
 
         when(vendaRepository.findById(1L)).thenReturn(Optional.of(venda));
 
-        Optional<Venda> encontrada = vendaService.buscarPorId(1L);
+        Venda encontrada = vendaService.buscarPorId(1L);
 
         verify(vendaRepository).findById(1L);
-        assertTrue(encontrada.isPresent());
-        assertEquals(venda, encontrada.get());
+        assertEquals(venda, encontrada);
     }
 
     private static Pizza pizzaComValor(String valor) {
         Pizza pizza = new Pizza();
         pizza.setName("Calabresa");
         pizza.setDescricao("Calabresa tradicional");
+        pizza.setCategoria("Tradicionais");
         pizza.setValorBase(new BigDecimal(valor));
         return pizza;
     }

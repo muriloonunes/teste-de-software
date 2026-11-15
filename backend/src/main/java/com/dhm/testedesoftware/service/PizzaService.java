@@ -22,6 +22,7 @@ public class PizzaService {
         Pizza pizza = new Pizza();
         pizza.setName(dto.name());
         pizza.setDescricao(dto.descricao());
+        pizza.setCategoria(dto.categoria());
         pizza.setValorBase(dto.valorBase());
         return PizzaResponseDTO.fromEntity(pizzaRepository.save(pizza));
     }
@@ -30,6 +31,7 @@ public class PizzaService {
         Pizza pizza = buscarPorId(id);
         pizza.setName(dto.name());
         pizza.setDescricao(dto.descricao());
+        pizza.setCategoria(dto.categoria());
         pizza.setValorBase(dto.valorBase());
         return PizzaResponseDTO.fromEntity(pizzaRepository.save(pizza));
     }

@@ -33,6 +33,10 @@ public class Pizza {
     @Size(max = 255, message = "A descrição não pode ter mais de 255 caracteres")
     private String descricao;
 
+    @Column(name = "categoria", nullable = false, length = 50)
+    @Size(min = 1, max = 50, message = "A categoria deve ter entre 1 e 50 caracteres.")
+    private String categoria;
+
     @Column(name = "preco_base", nullable = false, precision = 10, scale = 2)
     @Positive(message = "O preço da pizza deve ser maior que zero.")
     private BigDecimal valorBase;
