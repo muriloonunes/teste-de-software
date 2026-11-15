@@ -1,0 +1,131 @@
+<header class="topbar">
+  <div class="brand"><span>🍕</span>DHM <b>Pizzaria</b></div>
+  <nav class="tabs">
+    <button [class.active]="abaAtiva === 'novo-pedido'" (click)="abaAtiva = 'novo-pedido'">Novo pedido</button>
+    <button [class.active]="abaAtiva === 'historico'" (click)="abaAtiva = 'historico'; carregarHistorico()">Pedidos</button>
+  </nav>
+  <div class="actions">
+    <span class="attendant">Atendente <strong>{{ usuario()?.nome }}</strong></span>
+    <button class="cart-button" (click)="carrinhoAberto = !carrinhoAberto">🧾 <strong>{{ quantidadeCarrinho }}</strong></button>
+    <button class="secondary" (click)="logout()">Sair</button>
+  </div>
+</header>
+
+<main class="dashboard">
+  @if (abaAtiva === 'novo-pedido') {
+    <section class="order-builder">
+      <div class="section-title">
+        <div><small>MONTAR PEDIDO PARA CLIENTE</small><h2>Cardápio</h2></div>
+        <input id="search" [(ngModel)]="busca" placeholder="🔎 Buscar pizza...">
+      </div>
+      <div class="categories">
+        @for (item of categorias; track item) {
+          <button [class.active]="categoria === item" (click)="categoria = item">{{ item }}</button>
+        }
+      </div>
+      <div class="pizza-grid">
+        @for (pizza of pizzasFiltradas; track pizza.id) {
+          <article class="pizza-card">
+            <div class="pizza-image">🍕</div>
+            <div class="pizza-content">
+              <small>{{ pizza.categoria }}</small>
+              <h3>{{ pizza.name }}</h3>
+              <p>{{ pizza.descricao }}</p>
+              <div class="pizza-size">
+                <select [ngModel]="tamanhoSelecionado(pizza)" (ngModelChange)="selecionarTamanho(pizza, $event)">
+                  <option value="PEQUENA">Pequena</option>
+                  <option value="MEDIA">Média</option>
+                  <option value="GRANDE">Grande</option>
+                </select>
+              </div>
+              <footer><strong>{{ pizza.valorBase | currency:'BRL' }}</strong><button (click)="adicionar(pizza)">+</button></footer>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">Nenhuma pizza encontrada no cardápio.</p>
+        }
+      </div>
+    </section>
+  }
+
+  @if (abaAtiva === 'historico') {
+    <section class="order-history">
+      <div class="section-title">
+        <div><small>GESTÃO DE PEDIDOS</small><h2>Histórico de pedidos</h2></div>
+      </div>
+      <div class="history-stats">
+        <div class="stat-card">
+          <small>Pedidos registrados</small>
+          <strong>{{ pedidos.length }}</strong>
+        </div>
+        <div class="stat-card">
+          <small>Faturamento do atendente</small>
+          <strong>{{ faturamentoHistorico | currency:'BRL' }}</strong>
+        </div>
+      </div>
+      @for (pedido of pedidos; track pedido.id) {
+        <article class="order-row">
+          <div class="order-row-header">
+            <strong>Pedido #{{ pedido.id }}</strong>
+            <strong class="order-value">{{ pedido.valor | currency:'BRL' }}</strong>
+          </div>
+          <span class="order-customer">Cliente: {{ pedido.cliente.nome }} · {{ pedido.cliente.endereco }}</span>
+          <ul class="order-items">
+            @for (item of pedido.pedidos; track $index) {
+              <li>{{ item.quantidade }}x {{ item.pizza.name }} <small>({{ item.tamanho }})</small></li>
+            }
+          </ul>
+        </article>
+      } @empty {
+        <p class="empty">Nenhum pedido registrado ainda.</p>
+      }
+    </section>
+  }
+</main>
+
+@if (carrinhoAberto) {
+  <aside class="cart-panel">
+    <div class="cart-header">
+      <h2>Pedido em andamento</h2>
+      <button class="close" (click)="carrinhoAberto = false">×</button>
+    </div>
+    <div class="cart-items-container">
+      @for (item of carrinho; track $index) {
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <span class="item-name">🍕 {{ item.pizza.name }}</span>
+            <small class="item-size">{{ item.tamanho }}</small>
+          </div>
+          <div class="cart-qty-controls">
+            <button (click)="alterarQuantidade($index, -1)">−</button>
+            <span class="qty-count">{{ item.quantidade }}</span>
+            <button (click)="alterarQuantidade($index, 1)">+</button>
+          </div>
+          <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
+          <button class="remove" (click)="remover($index)">×</button>
+        </div>
+      } @empty {
+        <p class="empty">Nenhuma pizza adicionada ao pedido.</p>
+      }
+    </div>
+    <div class="total"><span>Total</span><strong>{{ subtotal | currency:'BRL' }}</strong></div>
+    <div class="delivery">
+      <h4>Dados do cliente</h4>
+      <input [(ngModel)]="entrega.telefone" placeholder="Telefone (com DDD) *" required>
+      <input [(ngModel)]="entrega.endereco" placeholder="Endereço de entrega completo *" required>
+      <button class="primary full" (click)="finalizar()">Registrar pedido</button>
+    </div>
+  </aside>
+}
+
+@if (mensagem) {
+  <aside class="global-message" [ngClass]="'tipo-' + tipoMensagem" role="status">
+    <span class="global-message-icon">
+      @if (tipoMensagem === 'sucesso') { ✓ }
+      @else if (tipoMensagem === 'erro') { ⚠️ }
+      @else { ℹ️ }
+    </span>
+    <span class="global-message-text">{{ mensagem }}</span>
+    <button type="button" class="global-message-close" (click)="fecharFeedback()" aria-label="Fechar mensagem">×</button>
+  </aside>
+}

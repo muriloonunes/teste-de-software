@@ -1,0 +1,235 @@
+<main class="access-gate">
+  <section class="access-card">
+    <div class="brand"><span>🍕</span>DHM <b>Pizzaria</b></div>
+    <small>ÁREA INTERNA</small>
+    <h1>Painel do atendente</h1>
+
+    @if (cadastroConcluido) {
+      <div class="success-panel">
+        <div class="success-badge">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2>Conta criada com sucesso!</h2>
+        <p>Bem-vindo(a) à equipe, <strong>{{ nomeCadastrado }}</strong>! Seu cadastro foi concluído e seu acesso está liberado.</p>
+        <div class="success-tip">Seu e-mail já foi preenchido na tela de login. Basta informar sua senha para entrar.</div>
+        <button class="primary full" type="button" (click)="irParaLogin()">Acessar painel agora</button>
+      </div>
+    } @else {
+      <p class="subtitle">Acesso restrito à equipe da pizzaria. Entre com sua conta ou crie um novo acesso para gerenciar os pedidos.</p>
+
+      <div class="access-tabs">
+        <button type="button" [class.active]="modoAcesso === 'login'" (click)="alternarModoAcesso('login')">Entrar</button>
+        <button type="button" [class.active]="modoAcesso === 'cadastro'" (click)="alternarModoAcesso('cadastro')">Criar conta</button>
+      </div>
+
+      @if (erro) {
+        <div class="alert-box alert-error" role="alert">
+          <span class="alert-icon">⚠️</span>
+          <div class="alert-content">
+            <strong>{{ emailConflito ? 'E-mail já cadastrado' : 'Atenção' }}</strong>
+            <span>{{ erro }}</span>
+            @if (emailConflito) {
+              <div>
+                <button type="button" class="alert-action-btn" (click)="usarEmailConflitoNoLogin()">
+                  Fazer login com este e-mail →
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (modoAcesso === 'login') {
+        <form class="access-form" (ngSubmit)="autenticar()" novalidate>
+          <div class="form-field">
+            <label class="field-label" for="loginEmail">E-mail</label>
+            <input
+              id="loginEmail"
+              [(ngModel)]="login.email"
+              name="loginEmail"
+              type="email"
+              placeholder="seu.email@pizzaria.com"
+              autocomplete="email"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="loginSenha">Senha</label>
+            <div class="input-with-action">
+              <input
+                id="loginSenha"
+                [(ngModel)]="login.senha"
+                name="loginSenha"
+                [type]="mostrarSenhaLogin ? 'text' : 'password'"
+                placeholder="Sua senha"
+                autocomplete="current-password"
+                required>
+              <button
+                type="button"
+                class="btn-toggle-pwd"
+                (click)="mostrarSenhaLogin = !mostrarSenhaLogin"
+                [title]="mostrarSenhaLogin ? 'Ocultar senha' : 'Ver senha'"
+                aria-label="Alternar visibilidade da senha">
+                @if (mostrarSenhaLogin) {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <button class="primary full" type="submit" [disabled]="carregando">
+            @if (carregando) {
+              <span class="spinner-inline"></span> Entrando...
+            } @else {
+              Entrar
+            }
+          </button>
+        </form>
+      } @else {
+        <form class="access-form" (ngSubmit)="cadastrar()" novalidate>
+          <div class="form-field">
+            <label class="field-label" for="cadastroNome">Nome completo</label>
+            <input
+              id="cadastroNome"
+              [(ngModel)]="cadastro.nome"
+              name="cadastroNome"
+              type="text"
+              placeholder="Ex: Ana Souza"
+              autocomplete="name"
+              [class.is-invalid]="camposTocados['nome'] && errosCampos['nome']"
+              (blur)="tocarCampo('nome')"
+              (input)="validarCampo('nome')"
+              required>
+            @if (camposTocados['nome'] && errosCampos['nome']) {
+              <span class="field-error-text">✕ {{ errosCampos['nome'] }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="cadastroEmail">E-mail corporativo / acesso</label>
+            <input
+              id="cadastroEmail"
+              [(ngModel)]="cadastro.email"
+              name="cadastroEmail"
+              type="email"
+              placeholder="atendente@pizzaria.com"
+              autocomplete="email"
+              [class.is-invalid]="(camposTocados['email'] && errosCampos['email']) || emailConflito"
+              (blur)="tocarCampo('email')"
+              (input)="validarCampo('email')"
+              required>
+            @if (errosCampos['email']) {
+              <span class="field-error-text">✕ {{ errosCampos['email'] }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="cadastroSenha">Senha</label>
+            <div class="input-with-action">
+              <input
+                id="cadastroSenha"
+                [(ngModel)]="cadastro.senha"
+                name="cadastroSenha"
+                [type]="mostrarSenhaCadastro ? 'text' : 'password'"
+                placeholder="Mínimo 6 caracteres"
+                autocomplete="new-password"
+                [class.is-invalid]="camposTocados['senha'] && errosCampos['senha']"
+                (blur)="tocarCampo('senha')"
+                (input)="validarCampo('senha')"
+                required>
+              <button
+                type="button"
+                class="btn-toggle-pwd"
+                (click)="mostrarSenhaCadastro = !mostrarSenhaCadastro"
+                [title]="mostrarSenhaCadastro ? 'Ocultar senha' : 'Ver senha'"
+                aria-label="Alternar visibilidade da senha">
+                @if (mostrarSenhaCadastro) {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+            <div class="pwd-indicators">
+              <span class="indicator-item" [class.met]="senhaValida">
+                {{ senhaValida ? '✓' : '○' }} Mínimo 6 caracteres
+              </span>
+            </div>
+            @if (camposTocados['senha'] && errosCampos['senha']) {
+              <span class="field-error-text">✕ {{ errosCampos['senha'] }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="cadastroConfirmarSenha">Confirmar senha</label>
+            <div class="input-with-action">
+              <input
+                id="cadastroConfirmarSenha"
+                [(ngModel)]="cadastro.confirmarSenha"
+                name="cadastroConfirmarSenha"
+                [type]="mostrarConfirmarSenha ? 'text' : 'password'"
+                placeholder="Repita sua senha"
+                autocomplete="new-password"
+                [class.is-invalid]="camposTocados['confirmarSenha'] && errosCampos['confirmarSenha']"
+                (blur)="tocarCampo('confirmarSenha')"
+                (input)="validarCampo('confirmarSenha')"
+                required>
+              <button
+                type="button"
+                class="btn-toggle-pwd"
+                (click)="mostrarConfirmarSenha = !mostrarConfirmarSenha"
+                [title]="mostrarConfirmarSenha ? 'Ocultar senha' : 'Ver senha'"
+                aria-label="Alternar visibilidade da confirmação de senha">
+                @if (mostrarConfirmarSenha) {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (cadastro.confirmarSenha) {
+              <div class="pwd-indicators">
+                <span class="indicator-item" [class.met]="senhasCoincidem" [class.mismatch]="!senhasCoincidem">
+                  {{ senhasCoincidem ? '✓ As senhas coincidem' : '✕ As senhas não conferem' }}
+                </span>
+              </div>
+            }
+            @if (camposTocados['confirmarSenha'] && errosCampos['confirmarSenha']) {
+              <span class="field-error-text">✕ {{ errosCampos['confirmarSenha'] }}</span>
+            }
+          </div>
+
+          <button class="primary full" type="submit" [disabled]="carregando">
+            @if (carregando) {
+              <span class="spinner-inline"></span> Criando conta...
+            } @else {
+              Cadastrar atendente
+            }
+          </button>
+        </form>
+      }
+    }
+  </section>
+</main>

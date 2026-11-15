@@ -1,0 +1,213 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--dhm-bg-app);
+  color: var(--dhm-white);
+  font-family: var(--dhm-font-family);
+}
+
+.brand {
+  font: 700 23px var(--dhm-font-display);
+  color: var(--dhm-white);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.brand span {
+  background: var(--dhm-red-500);
+  border-radius: 50%;
+  padding: 7px;
+  margin-right: 8px;
+  font-size: 15px;
+}
+
+.brand b {
+  color: var(--dhm-yellow-400);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.access-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.access-card {
+  width: min(440px, 100%);
+  background: var(--dhm-bg-card);
+  border: 1px solid var(--dhm-border-subtle);
+  border-radius: var(--dhm-radius-md);
+  padding: 36px 30px;
+  text-align: center;
+  box-shadow: var(--dhm-shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.access-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--dhm-red-500), var(--dhm-yellow-400));
+}
+
+.access-card .brand {
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.access-card small {
+  letter-spacing: 2px;
+  color: var(--dhm-yellow-400);
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.access-card h1 {
+  font: 700 26px var(--dhm-font-display);
+  margin: 8px 0 10px;
+}
+
+.subtitle {
+  color: var(--dhm-gray-400);
+  line-height: 1.5;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.access-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--dhm-bg-surface);
+  border: 1px solid var(--dhm-border-subtle);
+  border-radius: var(--dhm-radius-pill);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.access-tabs button {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-radius: var(--dhm-radius-pill);
+  color: var(--dhm-gray-300);
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dhm-transition-fast);
+}
+
+.access-tabs button.active {
+  background: var(--dhm-red-500);
+  color: var(--dhm-white);
+  box-shadow: 0 2px 8px var(--dhm-red-glow);
+}
+
+.access-form {
+  display: grid;
+  gap: 14px;
+  text-align: left;
+}
+
+.access-form input {
+  background: var(--dhm-bg-input);
+  border: 1px solid var(--dhm-border-medium);
+  border-radius: var(--dhm-radius-sm);
+  color: var(--dhm-white);
+  padding: 12px 14px;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+  transition: border-color var(--dhm-transition-fast), box-shadow var(--dhm-transition-fast);
+}
+
+.access-form input:focus {
+  border-color: var(--dhm-yellow-400);
+  box-shadow: 0 0 0 1px var(--dhm-yellow-400);
+}
+
+.access-form button[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Indicadores de senha */
+.pwd-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.indicator-item {
+  font-size: 11px;
+  color: var(--dhm-gray-500);
+  transition: color var(--dhm-transition-fast);
+}
+
+.indicator-item.met {
+  color: var(--dhm-green-400);
+  font-weight: 600;
+}
+
+.indicator-item.mismatch {
+  color: var(--dhm-red-400);
+  font-weight: 600;
+}
+
+/* Feedback de cadastro concluído */
+.success-panel {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.success-badge {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dhm-green-subtle);
+  color: var(--dhm-green-400);
+  border: 2px solid var(--dhm-green-500);
+  box-shadow: 0 0 20px var(--dhm-green-glow);
+  margin-bottom: 4px;
+}
+
+.success-panel h2 {
+  font: 700 24px var(--dhm-font-display);
+  margin: 0;
+  color: var(--dhm-white);
+}
+
+.success-panel p {
+  color: var(--dhm-gray-300);
+  line-height: 1.6;
+  font-size: 14px;
+  margin: 0;
+}
+
+.success-panel p strong {
+  color: var(--dhm-yellow-400);
+}
+
+.success-tip {
+  background: var(--dhm-bg-surface-elevated);
+  border: 1px dashed var(--dhm-border-yellow);
+  border-radius: var(--dhm-radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--dhm-yellow-300);
+  line-height: 1.5;
+  margin: 4px 0 12px;
+}
