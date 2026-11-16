@@ -35,4 +35,5 @@ export interface Pedido {
   valor: number;
   cliente: Cliente;
   pedidos: { pizza: { name: string }; tamanho: string; quantidade: number }[];
+  adicionais?: { adicional: { nome: string }; precoUnitario: number; quantidade: number }[];
 }

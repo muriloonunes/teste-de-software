@@ -3,6 +3,7 @@
   <nav class="tabs">
     <button [class.active]="abaAtiva === 'novo-pedido'" (click)="abaAtiva = 'novo-pedido'">Novo pedido</button>
     <button [class.active]="abaAtiva === 'historico'" (click)="abaAtiva = 'historico'; carregarHistorico()">Pedidos</button>
+    <button [class.active]="abaAtiva === 'cardapio'" (click)="abaAtiva = 'cardapio'">Cardápio</button>
   </nav>
   <div class="actions">
     <span class="attendant">Atendente <strong>{{ usuario()?.nome }}</strong></span>
@@ -33,12 +34,15 @@
               <p>{{ pizza.descricao }}</p>
               <div class="pizza-size">
                 <select [ngModel]="tamanhoSelecionado(pizza)" (ngModelChange)="selecionarTamanho(pizza, $event)">
-                  <option value="PEQUENA">Pequena</option>
-                  <option value="MEDIA">Média</option>
-                  <option value="GRANDE">Grande</option>
+                  <option value="PEQUENA">Pequena (4 fatias — 1x)</option>
+                  <option value="MEDIA">Média (6 fatias — 1.5x)</option>
+                  <option value="GRANDE">Grande (8 fatias — 1.8x)</option>
                 </select>
               </div>
-              <footer><strong>{{ pizza.valorBase | currency:'BRL' }}</strong><button (click)="adicionar(pizza)">+</button></footer>
+              <footer>
+                <strong>{{ precoPizzaPorTamanho(pizza) | currency:'BRL' }}</strong>
+                <button type="button" (click)="adicionar(pizza)" title="Adicionar ao pedido">+</button>
+              </footer>
             </div>
           </article>
         } @empty {
@@ -69,10 +73,15 @@
             <strong>Pedido #{{ pedido.id }}</strong>
             <strong class="order-value">{{ pedido.valor | currency:'BRL' }}</strong>
           </div>
-          <span class="order-customer">Cliente: {{ pedido.cliente.nome }} · {{ pedido.cliente.endereco }}</span>
+          <span class="order-customer">
+            Cliente: {{ pedido.cliente?.nome }} · Tel: {{ pedido.cliente?.telefone }} · Endereço: {{ pedido.cliente?.endereco }}
+          </span>
           <ul class="order-items">
             @for (item of pedido.pedidos; track $index) {
-              <li>{{ item.quantidade }}x {{ item.pizza.name }} <small>({{ item.tamanho }})</small></li>
+              <li>🍕 {{ item.quantidade }}x {{ item.pizza.name }} <small>({{ item.tamanho }})</small></li>
+            }
+            @for (extra of pedido.adicionais ?? []; track $index) {
+              <li class="order-extra-tag">+ {{ extra.quantidade }}x {{ extra.adicional.nome }}</li>
             }
           </ul>
         </article>
@@ -80,6 +89,10 @@
         <p class="empty">Nenhum pedido registrado ainda.</p>
       }
     </section>
+  }
+
+  @if (abaAtiva === 'cardapio') {
+    <app-cardapio-manager (catalogoAtualizado)="carregarCatalogo()" />
   }
 </main>
 
@@ -91,18 +104,37 @@
     </div>
     <div class="cart-items-container">
       @for (item of carrinho; track $index) {
-        <div class="cart-item">
-          <div class="cart-item-info">
-            <span class="item-name">🍕 {{ item.pizza.name }}</span>
-            <small class="item-size">{{ item.tamanho }}</small>
+        <div class="cart-item-block">
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <span class="item-name">🍕 {{ item.pizza.name }}</span>
+              <small class="item-size">Tamanho: {{ item.tamanho }}</small>
+            </div>
+            <div class="cart-qty-controls">
+              <button type="button" (click)="alterarQuantidade($index, -1)">−</button>
+              <span class="qty-count">{{ item.quantidade }}</span>
+              <button type="button" (click)="alterarQuantidade($index, 1)">+</button>
+            </div>
+            <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
+            <button type="button" class="remove" (click)="remover($index)">×</button>
           </div>
-          <div class="cart-qty-controls">
-            <button (click)="alterarQuantidade($index, -1)">−</button>
-            <span class="qty-count">{{ item.quantidade }}</span>
-            <button (click)="alterarQuantidade($index, 1)">+</button>
-          </div>
-          <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
-          <button class="remove" (click)="remover($index)">×</button>
+
+          @if (adicionais.length > 0) {
+            <div class="cart-item-adicionais">
+              <span class="adicionais-label">Adicionais / Bordas:</span>
+              <div class="adicionais-chips">
+                @for (adicional of adicionais; track adicional.id) {
+                  <button
+                    type="button"
+                    class="chip-adicional"
+                    [class.selected]="temAdicional(item, adicional)"
+                    (click)="alternarAdicional(item, adicional)">
+                    {{ temAdicional(item, adicional) ? '✓' : '+' }} {{ adicional.nome }} ({{ adicional.preco | currency:'BRL' }})
+                  </button>
+                }
+              </div>
+            </div>
+          }
         </div>
       } @empty {
         <p class="empty">Nenhuma pizza adicionada ao pedido.</p>
@@ -111,6 +143,7 @@
     <div class="total"><span>Total</span><strong>{{ subtotal | currency:'BRL' }}</strong></div>
     <div class="delivery">
       <h4>Dados do cliente</h4>
+      <input [(ngModel)]="entrega.nome" placeholder="Nome do cliente *" required>
       <input [(ngModel)]="entrega.telefone" placeholder="Telefone (com DDD) *" required>
       <input [(ngModel)]="entrega.endereco" placeholder="Endereço de entrega completo *" required>
       <button class="primary full" (click)="finalizar()">Registrar pedido</button>

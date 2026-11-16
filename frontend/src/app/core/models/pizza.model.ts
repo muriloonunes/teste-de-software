@@ -5,3 +5,10 @@ export interface Pizza {
   categoria: string;
   valorBase: number;
 }
+
+export interface NovaPizza {
+  name: string;
+  descricao: string;
+  categoria: string;
+  valorBase: number;
+}

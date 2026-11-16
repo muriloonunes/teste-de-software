@@ -9,13 +9,14 @@ import { PedidoService } from '../../core/services/pedido.service';
 import { Adicional } from '../../core/models/adicional.model';
 import { DadosEntrega, ItemCarrinho, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
 import { Pizza } from '../../core/models/pizza.model';
+import { CardapioManagerComponent } from './cardapio-manager/cardapio-manager';
 
 const CHAVE_CARRINHO = 'dhm-pizzaria-pedido-atual';
 
 @Component({
   selector: 'app-internal-screen',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardapioManagerComponent],
   templateUrl: './internal-screen.html',
   styleUrl: './internal-screen.css',
 })
@@ -32,7 +33,7 @@ export class InternalScreen implements OnInit {
   adicionais: Adicional[] = [];
   pedidos: Pedido[] = [];
   carrinho: ItemCarrinho[] = this.loadCart();
-  abaAtiva: 'novo-pedido' | 'historico' = 'novo-pedido';
+  abaAtiva: 'novo-pedido' | 'historico' | 'cardapio' = 'novo-pedido';
   categoria = 'Todas';
   busca = '';
   carrinhoAberto = false;
@@ -112,9 +113,15 @@ export class InternalScreen implements OnInit {
     return this.pedidos.reduce((total, pedido) => total + Number(pedido.valor), 0);
   }
 
+  precoPizzaPorTamanho(pizza: Pizza): number {
+    const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
+    const tamanho = this.tamanhoSelecionado(pizza);
+    return Number(pizza.valorBase) * multiplicadores[tamanho];
+  }
+
   precoItem(item: ItemCarrinho): number {
     const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
-    const extras = item.adicionais.reduce((total, adicional) => total + Number(adicional.preco), 0);
+    const extras = (item.adicionais ?? []).reduce((total, adicional) => total + Number(adicional.preco), 0);
     return (Number(item.pizza.valorBase) * multiplicadores[item.tamanho] + extras) * item.quantidade;
   }
 
@@ -126,9 +133,28 @@ export class InternalScreen implements OnInit {
     this.tamanhosSelecionados.set(pizza.id, tamanho);
   }
 
+  temAdicional(item: ItemCarrinho, adicional: Adicional): boolean {
+    return (item.adicionais ?? []).some(a => a.id === adicional.id);
+  }
+
+  alternarAdicional(item: ItemCarrinho, adicional: Adicional): void {
+    if (!item.adicionais) {
+      item.adicionais = [];
+    }
+    const idx = item.adicionais.findIndex(a => a.id === adicional.id);
+    if (idx >= 0) {
+      item.adicionais.splice(idx, 1);
+    } else {
+      item.adicionais.push(adicional);
+    }
+    this.persistirCarrinho();
+  }
+
   adicionar(pizza: Pizza): void {
     const tamanho = this.tamanhoSelecionado(pizza);
-    const existente = this.carrinho.find(item => item.pizza.id === pizza.id && item.tamanho === tamanho);
+    const existente = this.carrinho.find(
+      item => item.pizza.id === pizza.id && item.tamanho === tamanho && (!item.adicionais || item.adicionais.length === 0),
+    );
     if (existente) {
       existente.quantidade += 1;
     } else {
@@ -161,11 +187,29 @@ export class InternalScreen implements OnInit {
       this.exibirFeedback('Adicione pelo menos uma pizza ao pedido antes de finalizar.', 'erro');
       return;
     }
-    if (!this.entrega.telefone.trim() || !this.entrega.endereco.trim()) {
-      this.exibirFeedback('Por favor, informe telefone e endereço de entrega do cliente.', 'erro');
+    if (!this.entrega.nome.trim() || !this.entrega.telefone.trim() || !this.entrega.endereco.trim()) {
+      this.exibirFeedback('Por favor, informe nome, telefone e endereço de entrega do cliente.', 'erro');
       return;
     }
-    this.pedidoService.criarCliente(this.entrega).subscribe({
+
+    // Agrega quantidades de adicionais para enviar à API VendaService
+    const mapaAdicionais = new Map<number, number>();
+    for (const item of this.carrinho) {
+      for (const adicional of item.adicionais ?? []) {
+        const atual = mapaAdicionais.get(adicional.id) ?? 0;
+        mapaAdicionais.set(adicional.id, atual + item.quantidade);
+      }
+    }
+    const listaAdicionais = Array.from(mapaAdicionais.entries()).map(([adicionalId, quantidade]) => ({
+      adicionalId,
+      quantidade,
+    }));
+
+    this.pedidoService.criarCliente({
+      nome: this.entrega.nome.trim(),
+      telefone: this.entrega.telefone.trim(),
+      endereco: this.entrega.endereco.trim(),
+    }).subscribe({
       next: cliente => this.pedidoService.criarVenda({
         clienteId: cliente.id,
         usuarioId: usuario.id,
@@ -174,13 +218,13 @@ export class InternalScreen implements OnInit {
           tamanho: item.tamanho,
           quantidade: item.quantidade,
         })),
-        adicionais: this.carrinho.flatMap(item =>
-          item.adicionais.map(adicional => ({ adicionalId: adicional.id, quantidade: item.quantidade })),
-        ),
+        adicionais: listaAdicionais,
       }).subscribe({
         next: () => {
           this.carrinho = [];
           this.persistirCarrinho();
+          this.entrega.telefone = '';
+          this.entrega.endereco = '';
           this.carregarHistorico();
           this.abaAtiva = 'historico';
           this.carrinhoAberto = false;

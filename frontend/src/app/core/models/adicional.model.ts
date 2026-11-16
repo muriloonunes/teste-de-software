@@ -4,3 +4,9 @@ export interface Adicional {
   descricao: string;
   preco: number;
 }
+
+export interface NovoAdicional {
+  nome: string;
+  descricao: string;
+  preco: number;
+}
