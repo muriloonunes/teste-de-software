@@ -1,0 +1,215 @@
+<section class="cardapio-manager">
+  <div class="section-title">
+    <div><small>GESTÃO DE CARDÁPIO</small><h2>Pizzas e adicionais</h2></div>
+  </div>
+
+  <div class="manager-tabs">
+    <button type="button" [class.active]="secaoAtiva === 'pizzas'" (click)="secaoAtiva = 'pizzas'">
+      🍕 Pizzas ({{ pizzas.length }})
+    </button>
+    <button type="button" [class.active]="secaoAtiva === 'adicionais'" (click)="secaoAtiva = 'adicionais'">
+      🧀 Adicionais ({{ adicionais.length }})
+    </button>
+  </div>
+
+  @if (mensagem) {
+    <div class="alert-box" [ngClass]="tipoMensagem === 'erro' ? 'alert-error' : 'alert-success'" role="alert">
+      <span class="alert-icon">{{ tipoMensagem === 'erro' ? '⚠️' : '✓' }}</span>
+      <div class="alert-content">
+        <strong>{{ tipoMensagem === 'erro' ? 'Atenção' : 'Sucesso' }}</strong>
+        <span>{{ mensagem }}</span>
+      </div>
+    </div>
+  }
+
+  @if (secaoAtiva === 'pizzas') {
+    <div class="manager-layout">
+      <form class="manager-form" (ngSubmit)="salvarPizza()" novalidate>
+        <h3>{{ pizzaEmEdicao ? '✏️ Editar pizza' : '➕ Nova pizza' }}</h3>
+
+        <div class="form-field">
+          <label class="field-label" for="pizzaNome">Nome da pizza *</label>
+          <input
+            id="pizzaNome"
+            [(ngModel)]="formPizza.name"
+            name="pizzaNome"
+            placeholder="Ex: Calabresa Especial"
+            [class.is-invalid]="errosPizza['name']"
+            required>
+          @if (errosPizza['name']) {
+            <span class="field-error-text">✕ {{ errosPizza['name'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="pizzaCategoria">Categoria *</label>
+          <input
+            id="pizzaCategoria"
+            [(ngModel)]="formPizza.categoria"
+            name="pizzaCategoria"
+            placeholder="Ex: Tradicionais, Especiais, Doces"
+            [class.is-invalid]="errosPizza['categoria']"
+            required>
+          @if (errosPizza['categoria']) {
+            <span class="field-error-text">✕ {{ errosPizza['categoria'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="pizzaDescricao">Ingredientes / Descrição *</label>
+          <input
+            id="pizzaDescricao"
+            [(ngModel)]="formPizza.descricao"
+            name="pizzaDescricao"
+            placeholder="Ex: Molho artesanal, mussarela, calabresa e cebola"
+            [class.is-invalid]="errosPizza['descricao']"
+            required>
+          @if (errosPizza['descricao']) {
+            <span class="field-error-text">✕ {{ errosPizza['descricao'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="pizzaValor">Preço Base — Pequena (R$) *</label>
+          <input
+            id="pizzaValor"
+            [(ngModel)]="formPizza.valorBase"
+            name="pizzaValor"
+            type="number"
+            step="0.50"
+            min="0.01"
+            placeholder="Ex: 39.90"
+            [class.is-invalid]="errosPizza['valorBase']"
+            required>
+          <span class="field-hint-text">
+            Tamanhos no pedido: Pequena (1x) · Média (1.5x) · Grande (1.8x)
+          </span>
+          @if (errosPizza['valorBase']) {
+            <span class="field-error-text">✕ {{ errosPizza['valorBase'] }}</span>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" [disabled]="salvandoPizza">
+            @if (salvandoPizza) {
+              <span class="spinner-inline"></span> Salvando...
+            } @else {
+              {{ pizzaEmEdicao ? 'Salvar alterações' : 'Cadastrar pizza' }}
+            }
+          </button>
+          @if (pizzaEmEdicao) {
+            <button class="secondary" type="button" (click)="cancelarEdicaoPizza()">Cancelar</button>
+          }
+        </div>
+      </form>
+
+      <div class="manager-list">
+        @for (pizza of pizzas; track pizza.id) {
+          <article class="manager-item">
+            <div class="manager-item-info">
+              <div class="manager-item-title">
+                <strong>{{ pizza.name }}</strong>
+                <small class="badge-category">{{ pizza.categoria }}</small>
+              </div>
+              <p>{{ pizza.descricao }}</p>
+              <div class="size-prices-preview">
+                <span>P (4 fat.): <b>{{ pizza.valorBase | currency:'BRL' }}</b></span>
+                <span>M (6 fat.): <b>{{ (pizza.valorBase * 1.5) | currency:'BRL' }}</b></span>
+                <span>G (8 fat.): <b>{{ (pizza.valorBase * 1.8) | currency:'BRL' }}</b></span>
+              </div>
+            </div>
+            <div class="manager-item-actions">
+              <strong class="manager-item-price">{{ pizza.valorBase | currency:'BRL' }}</strong>
+              <button class="link" type="button" (click)="editarPizza(pizza)">Editar</button>
+              <button class="link danger" type="button" (click)="excluirPizza(pizza)">Excluir</button>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">Nenhuma pizza cadastrada no cardápio. Utilize o formulário ao lado para criar a primeira!</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (secaoAtiva === 'adicionais') {
+    <div class="manager-layout">
+      <form class="manager-form" (ngSubmit)="salvarAdicional()" novalidate>
+        <h3>{{ adicionalEmEdicao ? '✏️ Editar adicional' : '➕ Novo adicional' }}</h3>
+
+        <div class="form-field">
+          <label class="field-label" for="adicionalNome">Nome do adicional *</label>
+          <input
+            id="adicionalNome"
+            [(ngModel)]="formAdicional.nome"
+            name="adicionalNome"
+            placeholder="Ex: Borda de Catupiry, Extra Bacon"
+            [class.is-invalid]="errosAdicional['nome']"
+            required>
+          @if (errosAdicional['nome']) {
+            <span class="field-error-text">✕ {{ errosAdicional['nome'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="adicionalDescricao">Descrição (opcional)</label>
+          <input
+            id="adicionalDescricao"
+            [(ngModel)]="formAdicional.descricao"
+            name="adicionalDescricao"
+            placeholder="Ex: Porção extra de 100g">
+          @if (errosAdicional['descricao']) {
+            <span class="field-error-text">✕ {{ errosAdicional['descricao'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="adicionalPreco">Preço unitário (R$) *</label>
+          <input
+            id="adicionalPreco"
+            [(ngModel)]="formAdicional.preco"
+            name="adicionalPreco"
+            type="number"
+            step="0.50"
+            min="0.01"
+            placeholder="Ex: 8.00"
+            [class.is-invalid]="errosAdicional['preco']"
+            required>
+          @if (errosAdicional['preco']) {
+            <span class="field-error-text">✕ {{ errosAdicional['preco'] }}</span>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" [disabled]="salvandoAdicional">
+            @if (salvandoAdicional) {
+              <span class="spinner-inline"></span> Salvando...
+            } @else {
+              {{ adicionalEmEdicao ? 'Salvar alterações' : 'Cadastrar adicional' }}
+            }
+          </button>
+          @if (adicionalEmEdicao) {
+            <button class="secondary" type="button" (click)="cancelarEdicaoAdicional()">Cancelar</button>
+          }
+        </div>
+      </form>
+
+      <div class="manager-list">
+        @for (adicional of adicionais; track adicional.id) {
+          <article class="manager-item">
+            <div class="manager-item-info">
+              <strong>{{ adicional.nome }}</strong>
+              <p>{{ adicional.descricao || 'Sem descrição adicional' }}</p>
+            </div>
+            <div class="manager-item-actions">
+              <strong class="manager-item-price">{{ adicional.preco | currency:'BRL' }}</strong>
+              <button class="link" type="button" (click)="editarAdicional(adicional)">Editar</button>
+              <button class="link danger" type="button" (click)="excluirAdicional(adicional)">Excluir</button>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">Nenhum adicional cadastrado. Utilize o formulário ao lado para criar bordas ou ingredientes extras!</p>
+        }
+      </div>
+    </div>
+  }
+</section>
