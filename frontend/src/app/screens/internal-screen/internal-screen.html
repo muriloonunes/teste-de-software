@@ -27,6 +27,15 @@
       <span class="tab-index">03</span> Cardápio
       <span class="tab-counter">{{ pizzas.length + adicionais.length }}</span>
     </button>
+    <button
+      type="button"
+      [class.active]="abaAtiva === 'usuarios'"
+      (click)="abaAtiva = 'usuarios'">
+      <span class="tab-index">04</span> Usuários
+      @if (totalUsuarios > 0) {
+        <span class="tab-counter">{{ totalUsuarios }}</span>
+      }
+    </button>
   </nav>
 
   <div class="actions">
@@ -286,6 +295,10 @@
 
   @if (abaAtiva === 'cardapio') {
     <app-cardapio-manager (catalogoAtualizado)="carregarCatalogo()" />
+  }
+
+  @if (abaAtiva === 'usuarios') {
+    <app-usuarios-manager (usuariosAtualizados)="totalUsuarios = $event" />
   }
 </main>
 

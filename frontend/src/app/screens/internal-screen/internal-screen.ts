@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { AuthService } from '../../core/services/auth.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { PedidoService } from '../../core/services/pedido.service';
 import { Adicional } from '../../core/models/adicional.model';
 import { DadosEntrega, ItemAdicionalCarrinho, ItemCarrinho, Pagamento, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
 import { Pizza, arredondarPrecoPizza } from '../../core/models/pizza.model';
 import { CardapioManagerComponent } from './cardapio-manager/cardapio-manager';
+import { UsuariosManagerComponent } from './usuarios-manager/usuarios-manager';
 
 const CHAVE_CARRINHO = 'dhm-pizzaria-pedido-atual';
 const CHAVE_ACOMPANHAMENTOS = 'dhm-pizzaria-acompanhamentos-atual';
@@ -17,12 +19,13 @@ const CHAVE_ACOMPANHAMENTOS = 'dhm-pizzaria-acompanhamentos-atual';
 @Component({
   selector: 'app-internal-screen',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardapioManagerComponent],
+  imports: [CommonModule, FormsModule, CardapioManagerComponent, UsuariosManagerComponent],
   templateUrl: './internal-screen.html',
   styleUrl: './internal-screen.css',
 })
 export class InternalScreen implements OnInit {
   private readonly authState = inject(AuthStateService);
+  private readonly authService = inject(AuthService);
   private readonly catalogoService = inject(CatalogoService);
   private readonly pedidoService = inject(PedidoService);
   private readonly router = inject(Router);
@@ -41,9 +44,10 @@ export class InternalScreen implements OnInit {
   pagamentos: Pagamento[] = [];
   pagamentoSelecionadoId: number | undefined;
   pedidos: Pedido[] = [];
+  totalUsuarios = 0;
   carrinho: ItemCarrinho[] = this.loadCart();
   acompanhamentosCarrinho: ItemAdicionalCarrinho[] = this.loadAcompanhamentos();
-  abaAtiva: 'novo-pedido' | 'historico' | 'cardapio' = 'novo-pedido';
+  abaAtiva: 'novo-pedido' | 'historico' | 'cardapio' | 'usuarios' = 'novo-pedido';
   categoria = 'Todas';
   busca = '';
   carrinhoAberto = false;
@@ -64,6 +68,12 @@ export class InternalScreen implements OnInit {
   ngOnInit(): void {
     this.carregarCatalogo();
     this.carregarHistorico();
+    this.authService.listar().subscribe({
+      next: usuarios => {
+        this.totalUsuarios = usuarios.length;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   exibirFeedback(texto: string, tipo: 'sucesso' | 'erro' | 'info' = 'sucesso'): void {
