@@ -1,0 +1,274 @@
+<section class="usuarios-manager">
+  <div class="section-title">
+    <div class="title-block">
+      <small>CONTROLE DE ACESSO · OPERADORES DO PDV</small>
+      <h2>Gestão de Usuários</h2>
+    </div>
+
+    <div class="header-tools">
+      <div class="status-summary">
+        <span class="summary-pill active-pill">{{ totalAtivos }} Ativos</span>
+        <span class="summary-pill total-pill">{{ usuarios.length }} Total</span>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">🔎</span>
+        <input
+          type="text"
+          [(ngModel)]="busca"
+          placeholder="Buscar por nome ou e-mail..."
+          aria-label="Buscar usuário">
+        @if (busca) {
+          <button
+            type="button"
+            class="search-clear"
+            (click)="busca = ''"
+            title="Limpar busca"
+            aria-label="Limpar busca">
+            ×
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (mensagem) {
+    <div class="alert-box" [ngClass]="tipoMensagem === 'erro' ? 'alert-error' : 'alert-success'" role="alert">
+      <span class="alert-icon">{{ tipoMensagem === 'erro' ? '⚠️' : '✓' }}</span>
+      <div class="alert-content">
+        <strong>{{ tipoMensagem === 'erro' ? 'Atenção' : 'Operação concluída' }}</strong>
+        <span>{{ mensagem }}</span>
+      </div>
+    </div>
+  }
+
+  <div class="manager-layout">
+    <form class="manager-form" [class.editing-mode]="usuarioEmEdicao" (ngSubmit)="salvarUsuario()" novalidate>
+      <div class="form-header-strip">
+        <span class="mode-tag" [class.editing]="usuarioEmEdicao">
+          {{ usuarioEmEdicao ? 'MODO EDIÇÃO #' + usuarioEmEdicao.id : 'NOVO OPERADOR' }}
+        </span>
+        <h3>{{ usuarioEmEdicao ? 'Editar Usuário' : 'Cadastrar Usuário' }}</h3>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="usuarioNome">Nome completo *</label>
+        <input
+          id="usuarioNome"
+          [(ngModel)]="formUsuario.nome"
+          (ngModelChange)="aoAlterarCampo('nome')"
+          (blur)="tocarCampo('nome')"
+          name="usuarioNome"
+          placeholder="Ex: Maria Oliveira"
+          [class.is-invalid]="camposTocados['nome'] && erros['nome']"
+          required>
+        @if (camposTocados['nome'] && erros['nome']) {
+          <span class="field-error-text">✕ {{ erros['nome'] }}</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="usuarioEmail">E-mail de acesso *</label>
+        <input
+          id="usuarioEmail"
+          [(ngModel)]="formUsuario.email"
+          (ngModelChange)="aoAlterarCampo('email')"
+          (blur)="tocarCampo('email')"
+          name="usuarioEmail"
+          type="email"
+          placeholder="Ex: maria@pizzaria.com"
+          [class.is-invalid]="camposTocados['email'] && erros['email']"
+          required>
+        @if (camposTocados['email'] && erros['email']) {
+          <span class="field-error-text">✕ {{ erros['email'] }}</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="usuarioSenha">
+          {{ usuarioEmEdicao ? 'Nova senha (opcional)' : 'Senha de acesso *' }}
+        </label>
+        <div class="input-with-action">
+          <input
+            id="usuarioSenha"
+            [(ngModel)]="formUsuario.senha"
+            (ngModelChange)="aoAlterarCampo('senha')"
+            (blur)="tocarCampo('senha')"
+            name="usuarioSenha"
+            [type]="mostrarSenha ? 'text' : 'password'"
+            minlength="6"
+            autocomplete="new-password"
+            [placeholder]="usuarioEmEdicao ? 'Deixe em branco para manter a atual' : 'Mínimo de 6 caracteres'"
+            [class.is-invalid]="(camposTocados['senha'] || formUsuario.senha.length > 0) && erros['senha']"
+            [required]="!usuarioEmEdicao">
+          <button
+            type="button"
+            class="btn-toggle-pwd"
+            (click)="mostrarSenha = !mostrarSenha"
+            [title]="mostrarSenha ? 'Ocultar senha' : 'Ver senha digitada'"
+            aria-label="Alternar visibilidade da senha">
+            @if (mostrarSenha) {
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+          </button>
+        </div>
+
+        @if (!usuarioEmEdicao || formUsuario.senha.length > 0) {
+          <div class="pwd-indicators">
+            <span
+              class="indicator-item"
+              [class.met]="senhaValida"
+              [class.mismatch]="senhaInvalida">
+              {{ senhaValida ? '✓' : (senhaInvalida ? '✕' : '○') }} Mínimo 6 caracteres ({{ tamanhoSenhaAtual }}/6)
+            </span>
+          </div>
+        } @else {
+          <span class="field-hint-text">
+            Preencha apenas se desejar redefinir a senha deste operador.
+          </span>
+        }
+
+        @if ((camposTocados['senha'] || formUsuario.senha.length > 0) && erros['senha']) {
+          <span class="field-error-text">✕ {{ erros['senha'] }}</span>
+        }
+      </div>
+
+      @if (!usuarioEmEdicao) {
+        <div class="form-field">
+          <label class="field-label" for="usuarioConfirmarSenha">Confirmar senha *</label>
+          <div class="input-with-action">
+            <input
+              id="usuarioConfirmarSenha"
+              [(ngModel)]="formUsuario.confirmarSenha"
+              (ngModelChange)="aoAlterarCampo('confirmarSenha')"
+              (blur)="tocarCampo('confirmarSenha')"
+              name="usuarioConfirmarSenha"
+              [type]="mostrarConfirmarSenha ? 'text' : 'password'"
+              placeholder="Repita a senha de acesso"
+              autocomplete="new-password"
+              [class.is-invalid]="(camposTocados['confirmarSenha'] || formUsuario.confirmarSenha.length > 0) && erros['confirmarSenha']"
+              required>
+            <button
+              type="button"
+              class="btn-toggle-pwd"
+              (click)="mostrarConfirmarSenha = !mostrarConfirmarSenha"
+              [title]="mostrarConfirmarSenha ? 'Ocultar confirmação' : 'Ver confirmação de senha'"
+              aria-label="Alternar visibilidade da confirmação de senha">
+              @if (mostrarConfirmarSenha) {
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              }
+            </button>
+          </div>
+
+          @if (formUsuario.confirmarSenha) {
+            <div class="pwd-indicators">
+              <span class="indicator-item" [class.met]="senhasCoincidem" [class.mismatch]="!senhasCoincidem">
+                {{ senhasCoincidem ? '✓ As senhas coincidem' : '✕ As senhas não conferem' }}
+              </span>
+            </div>
+          }
+
+          @if ((camposTocados['confirmarSenha'] || formUsuario.confirmarSenha.length > 0) && erros['confirmarSenha']) {
+            <span class="field-error-text">✕ {{ erros['confirmarSenha'] }}</span>
+          }
+        </div>
+      }
+
+      <div class="form-field">
+        <label class="field-label">Status de acesso ao sistema</label>
+        <button
+          type="button"
+          class="status-toggle-btn"
+          [class.is-active]="formUsuario.ativo"
+          (click)="formUsuario.ativo = !formUsuario.ativo">
+          <span class="status-dot"></span>
+          <strong>{{ formUsuario.ativo ? 'ATIVO — PODE AUTENTICAR NO PDV' : 'INATIVO — LOGIN BLOQUEADO' }}</strong>
+        </button>
+      </div>
+
+      <div class="form-actions">
+        <button class="primary" type="submit" [disabled]="salvando">
+          @if (salvando) {
+            <span class="spinner-inline"></span> Salvando...
+          } @else {
+            {{ usuarioEmEdicao ? 'Salvar alterações' : '+ Cadastrar usuário' }}
+          }
+        </button>
+        @if (usuarioEmEdicao) {
+          <button class="secondary" type="button" (click)="cancelarEdicao()">Cancelar</button>
+        }
+      </div>
+    </form>
+
+    <div class="manager-list">
+      @for (u of usuariosFiltrados; track u.id) {
+        <article
+          class="manager-item"
+          [class.is-editing]="usuarioEmEdicao?.id === u.id"
+          [class.is-inactive]="!u.ativo">
+          <div class="manager-item-info">
+            <div class="manager-item-title">
+              <span class="item-code">#{{ u.id | number:'2.0-0' }}</span>
+              <strong>{{ u.nome }}</strong>
+              <span class="badge-status" [class.active]="u.ativo" [class.inactive]="!u.ativo">
+                {{ u.ativo ? 'ATIVO' : 'INATIVO' }}
+              </span>
+              @if (usuarioLogado()?.id === u.id) {
+                <span class="badge-self">VOCÊ (SESSÃO ATUAL)</span>
+              }
+            </div>
+            <p class="user-email">✉️ {{ u.email }}</p>
+          </div>
+
+          <div class="manager-item-actions">
+            <div class="action-buttons">
+              <button
+                class="btn-item-action"
+                type="button"
+                (click)="alternarAtivo(u)"
+                [title]="u.ativo ? 'Bloquear acesso deste operador' : 'Liberar acesso deste operador'">
+                {{ u.ativo ? 'Desativar' : 'Ativar' }}
+              </button>
+              <button
+                class="btn-item-action"
+                type="button"
+                (click)="editarUsuario(u)">
+                Editar
+              </button>
+              <button
+                class="btn-item-action danger"
+                [class.confirming]="confirmandoExclusaoId === u.id"
+                type="button"
+                (click)="excluirUsuario(u)">
+                {{ confirmandoExclusaoId === u.id ? 'Confirmar?' : 'Excluir' }}
+              </button>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty">
+          <strong>Nenhum usuário encontrado</strong>
+          <p style="margin: 6px 0 0; font-size: 12px; color: var(--dhm-gray-400);">
+            Utilize o formulário ao lado para cadastrar um novo operador ou limpe o filtro de busca.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

@@ -14,4 +14,12 @@ export interface NovoUsuario {
   nome: string;
   email: string;
   senha: string;
+  ativo?: boolean;
+}
+
+export interface AtualizarUsuario {
+  nome: string;
+  email: string;
+  senha?: string | null;
+  ativo: boolean;
 }

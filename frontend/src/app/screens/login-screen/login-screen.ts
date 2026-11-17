@@ -77,12 +77,12 @@ export class LoginScreen {
     }
 
     if (campo === 'senha') {
-      if (!this.cadastro.senha) {
+      if (!this.cadastro.senha || !this.cadastro.senha.trim()) {
         this.errosCampos['senha'] = 'A senha é obrigatória.';
-      } else if (this.cadastro.senha.length < 6) {
+      } else if (this.cadastro.senha.trim().length < 6) {
         this.errosCampos['senha'] = 'A senha deve ter pelo menos 6 caracteres.';
       }
-      if (this.camposTocados['confirmarSenha'] && this.cadastro.confirmarSenha) {
+      if (this.camposTocados['confirmarSenha'] || this.cadastro.confirmarSenha) {
         this.validarCampo('confirmarSenha');
       }
     }
@@ -97,7 +97,7 @@ export class LoginScreen {
   }
 
   get senhaValida(): boolean {
-    return this.cadastro.senha.length >= 6;
+    return this.cadastro.senha.trim().length >= 6;
   }
 
   get senhasCoincidem(): boolean {

@@ -2,6 +2,7 @@ package com.dhm.testedesoftware.controller;
 
 import com.dhm.testedesoftware.model.dto.UsuarioRequestDTO;
 import com.dhm.testedesoftware.model.dto.UsuarioResponseDTO;
+import com.dhm.testedesoftware.model.dto.UsuarioUpdateDTO;
 import com.dhm.testedesoftware.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO dto) {
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateDTO dto) {
         return ResponseEntity.ok(service.atualizar(id, dto));
     }
 

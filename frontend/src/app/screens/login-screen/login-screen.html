@@ -170,13 +170,14 @@
               <input
                 id="cadastroSenha"
                 [(ngModel)]="cadastro.senha"
+                (ngModelChange)="tocarCampo('senha')"
                 name="cadastroSenha"
                 [type]="mostrarSenhaCadastro ? 'text' : 'password'"
+                minlength="6"
                 placeholder="Mínimo 6 caracteres"
                 autocomplete="new-password"
-                [class.is-invalid]="camposTocados['senha'] && errosCampos['senha']"
+                [class.is-invalid]="(camposTocados['senha'] || cadastro.senha.length > 0) && errosCampos['senha']"
                 (blur)="tocarCampo('senha')"
-                (input)="validarCampo('senha')"
                 required>
               <button
                 type="button"
@@ -198,11 +199,14 @@
               </button>
             </div>
             <div class="pwd-indicators">
-              <span class="indicator-item" [class.met]="senhaValida">
-                {{ senhaValida ? '✓' : '○' }} Mínimo 6 caracteres
+              <span
+                class="indicator-item"
+                [class.met]="senhaValida"
+                [class.mismatch]="(camposTocados['senha'] || cadastro.senha.length > 0) && !senhaValida">
+                {{ senhaValida ? '✓' : ((camposTocados['senha'] || cadastro.senha.length > 0) ? '✕' : '○') }} Mínimo 6 caracteres ({{ cadastro.senha.trim().length }}/6)
               </span>
             </div>
-            @if (camposTocados['senha'] && errosCampos['senha']) {
+            @if ((camposTocados['senha'] || cadastro.senha.length > 0) && errosCampos['senha']) {
               <span class="field-error-text">✕ {{ errosCampos['senha'] }}</span>
             }
           </div>
@@ -215,13 +219,13 @@
               <input
                 id="cadastroConfirmarSenha"
                 [(ngModel)]="cadastro.confirmarSenha"
+                (ngModelChange)="tocarCampo('confirmarSenha')"
                 name="cadastroConfirmarSenha"
                 [type]="mostrarConfirmarSenha ? 'text' : 'password'"
                 placeholder="Repita sua senha"
                 autocomplete="new-password"
-                [class.is-invalid]="camposTocados['confirmarSenha'] && errosCampos['confirmarSenha']"
+                [class.is-invalid]="(camposTocados['confirmarSenha'] || cadastro.confirmarSenha.length > 0) && errosCampos['confirmarSenha']"
                 (blur)="tocarCampo('confirmarSenha')"
-                (input)="validarCampo('confirmarSenha')"
                 required>
               <button
                 type="button"

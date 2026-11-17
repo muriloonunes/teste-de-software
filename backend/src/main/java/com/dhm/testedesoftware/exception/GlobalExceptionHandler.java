@@ -89,4 +89,14 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErroResposta> handleIllegalArgument(IllegalArgumentException ex) {
+        ErroResposta erro = new ErroResposta(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.badRequest().body(erro);
+    }
 }
