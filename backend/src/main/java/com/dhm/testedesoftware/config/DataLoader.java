@@ -77,13 +77,14 @@ public class DataLoader {
 
             if (adicionalRepository.count() == 0) {
                 adicionalRepository.saveAll(List.of(
-                        novoAdicional("Coca-Cola 2L", "Refrigerante garrafa 2 litros bem gelada", "14.00"),
-                        novoAdicional("Coca-Cola Lata 350ml", "Refrigerante lata 350ml individual", "6.50"),
-                        novoAdicional("Guaraná Antarctica 2L", "Refrigerante de guaraná garrafa 2 litros", "12.50"),
-                        novoAdicional("Suco de Laranja Natural 500ml", "Suco da fruta feito na hora", "10.00"),
-                        novoAdicional("Água Mineral com Gás 500ml", "Garrafa individual 500ml", "5.00"),
-                        novoAdicional("Borda Recheada de Catupiry", "Borda recheada com Catupiry original", "12.00"),
-                        novoAdicional("Extra de Bacon Crocante", "Porção extra de bacon (100g)", "8.00")
+                        novoAdicional("Coca-Cola 2L", "Refrigerante garrafa 2 litros bem gelada", "Bebida", "14.00"),
+                        novoAdicional("Coca-Cola Lata 350ml", "Refrigerante lata 350ml individual", "Bebida", "6.50"),
+                        novoAdicional("Guaraná Antarctica 2L", "Refrigerante de guaraná garrafa 2 litros", "Bebida", "12.50"),
+                        novoAdicional("Suco de Laranja Natural 500ml", "Suco da fruta feito na hora", "Bebida", "10.00"),
+                        novoAdicional("Água Mineral com Gás 500ml", "Garrafa individual 500ml", "Bebida", "5.00"),
+                        novoAdicional("Molho de Alho da Casa", "Potinho 50ml de maionese temperada", "Molho", "4.50"),
+                        novoAdicional("Batata Frita Crocante", "Porção de 300g com parmesão", "Porção", "18.00"),
+                        novoAdicional("Extra de Bacon Crocante", "Porção extra de bacon (100g)", "Extra", "8.00")
                 ));
             }
         };
@@ -107,10 +108,11 @@ public class DataLoader {
         return pizza;
     }
 
-    private Adicional novoAdicional(String nome, String descricao, String preco) {
+    private Adicional novoAdicional(String nome, String descricao, String categoria, String preco) {
         Adicional adicional = new Adicional();
         adicional.setNome(nome);
         adicional.setDescricao(descricao);
+        adicional.setCategoria(categoria);
         adicional.setPreco(new BigDecimal(preco));
         return adicional;
     }

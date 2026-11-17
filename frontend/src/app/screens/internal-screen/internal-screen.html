@@ -178,6 +178,7 @@
                 <div class="accompaniment-info">
                   <div class="accompaniment-top">
                     <span class="pizza-code">#{{ adicional.id | number:'2.0-0' }}</span>
+                    <span class="pizza-cat-tag">{{ adicional.categoria || 'Extra' }}</span>
                     @if (quantidadeAcompanhamentoNoPedido(adicional.id) > 0) {
                       <span class="in-cart-badge">{{ quantidadeAcompanhamentoNoPedido(adicional.id) }}x NA COMANDA</span>
                     }

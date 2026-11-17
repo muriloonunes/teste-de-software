@@ -8,8 +8,9 @@ import { Adicional } from '../../../core/models/adicional.model';
 import { Pizza, arredondarPrecoPizza } from '../../../core/models/pizza.model';
 
 const PIZZA_VAZIA: PizzaFormulario = { name: '', descricao: '', categoria: '', valorBase: 0 };
-const ADICIONAL_VAZIO: AdicionalFormulario = { nome: '', descricao: '', preco: 0 };
+const ADICIONAL_VAZIO: AdicionalFormulario = { nome: '', descricao: '', categoria: 'Bebida', preco: 0 };
 const CATEGORIAS_PADRAO = ['Tradicionais', 'Especiais', 'Doces', 'Vegetarianas'];
+const CATEGORIAS_ADICIONAL_PADRAO = ['Bebida', 'Molho', 'Porção', 'Extra'];
 
 @Component({
   selector: 'app-cardapio-manager',
@@ -53,6 +54,13 @@ export class CardapioManagerComponent implements OnInit {
       .map(p => p.categoria?.trim())
       .filter((c): c is string => !!c);
     return Array.from(new Set([...CATEGORIAS_PADRAO, ...existentes]));
+  }
+
+  get categoriasAdicionalSugeridas(): string[] {
+    const existentes = this.adicionais
+      .map(a => a.categoria?.trim())
+      .filter((c): c is string => !!c);
+    return Array.from(new Set([...CATEGORIAS_ADICIONAL_PADRAO, ...existentes]));
   }
 
   precoPorMultiplicador(valorBase: number, multiplicador: number): number {
@@ -189,7 +197,12 @@ export class CardapioManagerComponent implements OnInit {
   editarAdicional(adicional: Adicional): void {
     this.adicionalEmEdicao = adicional;
     this.errosAdicional = {};
-    this.formAdicional = { nome: adicional.nome, descricao: adicional.descricao, preco: adicional.preco };
+    this.formAdicional = {
+      nome: adicional.nome,
+      descricao: adicional.descricao,
+      categoria: adicional.categoria || 'Extra',
+      preco: adicional.preco,
+    };
     this.cdr.markForCheck();
   }
 
@@ -205,17 +218,21 @@ export class CardapioManagerComponent implements OnInit {
     if (!this.formAdicional.nome.trim()) {
       this.errosAdicional['nome'] = 'O nome do adicional é obrigatório.';
     }
+    if (!this.formAdicional.categoria?.trim()) {
+      this.errosAdicional['categoria'] = 'A categoria do adicional é obrigatória.';
+    }
     if (!this.formAdicional.preco || Number(this.formAdicional.preco) <= 0) {
       this.errosAdicional['preco'] = 'O preço do adicional deve ser maior que zero.';
     }
     if (Object.keys(this.errosAdicional).length > 0) {
-      this.exibirMensagem('Preencha o nome e um preço válido para o adicional.', 'erro');
+      this.exibirMensagem('Preencha o nome, a categoria e um preço válido para o adicional.', 'erro');
       return;
     }
 
     const payload: AdicionalFormulario = {
       nome: this.formAdicional.nome.trim(),
       descricao: (this.formAdicional.descricao ?? '').trim(),
+      categoria: this.formAdicional.categoria.trim(),
       preco: Number(this.formAdicional.preco),
     };
 

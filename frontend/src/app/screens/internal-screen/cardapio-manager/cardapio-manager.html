@@ -199,12 +199,29 @@
         </div>
 
         <div class="form-field">
-          <label class="field-label" for="adicionalDescricao">Categoria / Descrição (opcional)</label>
+          <label class="field-label" for="adicionalCategoria">Categoria *</label>
+          <select
+            id="adicionalCategoria"
+            [(ngModel)]="formAdicional.categoria"
+            name="adicionalCategoria"
+            [class.is-invalid]="errosAdicional['categoria']"
+            required>
+            @for (cat of categoriasAdicionalSugeridas; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+          @if (errosAdicional['categoria']) {
+            <span class="field-error-text">✕ {{ errosAdicional['categoria'] }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="adicionalDescricao">Descrição (opcional)</label>
           <input
             id="adicionalDescricao"
             [(ngModel)]="formAdicional.descricao"
             name="adicionalDescricao"
-            placeholder="Ex: Bebida gelada 2L, Suco natural 500ml ou Modificador de pizza">
+            placeholder="Ex: Garrafa 2L bem gelada, Suco natural 500ml ou Modificador de pizza">
           @if (errosAdicional['descricao']) {
             <span class="field-error-text">✕ {{ errosAdicional['descricao'] }}</span>
           }
@@ -248,6 +265,7 @@
               <div class="manager-item-title">
                 <span class="item-code">#{{ adicional.id | number:'2.0-0' }}</span>
                 <strong>{{ adicional.nome }}</strong>
+                <small class="badge-category">{{ adicional.categoria || 'Extra' }}</small>
               </div>
               <p>{{ adicional.descricao || 'Acompanhamento / Adicional do cardápio' }}</p>
             </div>

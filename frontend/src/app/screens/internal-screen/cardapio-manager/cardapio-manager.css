@@ -139,7 +139,8 @@
   letter-spacing: -0.01em;
 }
 
-.manager-form input {
+.manager-form input,
+.manager-form select {
   background: var(--dhm-bg-input);
   border: 2px solid var(--dhm-border-medium);
   border-radius: var(--dhm-radius-xs);
@@ -152,7 +153,8 @@
   transition: border-color var(--dhm-transition-fast), box-shadow var(--dhm-transition-fast);
 }
 
-.manager-form input:focus {
+.manager-form input:focus,
+.manager-form select:focus {
   border-color: var(--dhm-yellow-400);
   box-shadow: 3px 3px 0px var(--dhm-yellow-400);
 }

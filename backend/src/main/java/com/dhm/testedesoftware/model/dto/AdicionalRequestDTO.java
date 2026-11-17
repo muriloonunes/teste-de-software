@@ -15,6 +15,10 @@ public record AdicionalRequestDTO(
         @Size(max = 255, message = "A descrição não pode ter mais de 255 caracteres.")
         String descricao,
 
+        @NotBlank(message = "A categoria é obrigatória.")
+        @Size(min = 1, max = 50, message = "A categoria deve ter entre 1 e 50 caracteres.")
+        String categoria,
+
         @NotNull(message = "O preço do adicional é obrigatório.")
         @Positive(message = "O preço do adicional deve ser maior que zero.")
         BigDecimal preco

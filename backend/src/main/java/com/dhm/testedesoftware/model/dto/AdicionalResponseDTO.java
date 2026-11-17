@@ -8,6 +8,7 @@ public record AdicionalResponseDTO(
         Long id,
         String nome,
         String descricao,
+        String categoria,
         BigDecimal preco
 ) {
     public static AdicionalResponseDTO fromEntity(Adicional adicional) {
@@ -18,6 +19,7 @@ public record AdicionalResponseDTO(
                 adicional.getId(),
                 adicional.getNome(),
                 adicional.getDescricao(),
+                adicional.getCategoria(),
                 adicional.getPreco()
         );
     }

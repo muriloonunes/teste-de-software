@@ -132,7 +132,7 @@ export class InternalScreen implements OnInit {
     const termo = this.busca.toLowerCase().trim();
     if (!termo) return this.adicionais;
     return this.adicionais.filter(adicional =>
-      `${adicional.nome} ${adicional.descricao ?? ''}`.toLowerCase().includes(termo),
+      `${adicional.nome} ${adicional.categoria ?? ''} ${adicional.descricao ?? ''}`.toLowerCase().includes(termo),
     );
   }
 

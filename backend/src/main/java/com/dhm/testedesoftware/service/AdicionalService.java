@@ -22,6 +22,7 @@ public class AdicionalService {
         Adicional adicional = new Adicional();
         adicional.setNome(dto.nome());
         adicional.setDescricao(dto.descricao());
+        adicional.setCategoria(dto.categoria());
         adicional.setPreco(dto.preco());
         return AdicionalResponseDTO.fromEntity(adicionalRepository.save(adicional));
     }
@@ -30,6 +31,7 @@ public class AdicionalService {
         Adicional adicional = buscarPorId(id);
         adicional.setNome(dto.nome());
         adicional.setDescricao(dto.descricao());
+        adicional.setCategoria(dto.categoria());
         adicional.setPreco(dto.preco());
         return AdicionalResponseDTO.fromEntity(adicionalRepository.save(adicional));
     }
