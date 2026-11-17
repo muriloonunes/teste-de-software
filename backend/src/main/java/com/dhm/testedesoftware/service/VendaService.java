@@ -21,6 +21,7 @@ import com.dhm.testedesoftware.repository.UsuarioRepository;
 import com.dhm.testedesoftware.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,6 +64,7 @@ public class VendaService {
         return vendaRepository.save(venda);
     }
 
+    @Transactional
     public VendaResponseDTO criar(VendaRequestDTO dto) {
         Venda venda = new Venda();
 
@@ -119,12 +121,14 @@ public class VendaService {
         return VendaResponseDTO.fromEntity(salvar(venda));
     }
 
+    @Transactional(readOnly = true)
     public List<VendaResponseDTO> listarDTO() {
         return vendaRepository.findAll().stream()
                 .map(VendaResponseDTO::fromEntity)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<VendaResponseDTO> historicoDTO(Long usuarioId) {
         return vendaRepository.findByUsuarioIdOrderByIdDesc(usuarioId).stream()
                 .map(VendaResponseDTO::fromEntity)
@@ -137,6 +141,7 @@ public class VendaService {
         );
     }
 
+    @Transactional(readOnly = true)
     public VendaResponseDTO buscarDTOPorId(Long id) {
         return VendaResponseDTO.fromEntity(buscarPorId(id));
     }
