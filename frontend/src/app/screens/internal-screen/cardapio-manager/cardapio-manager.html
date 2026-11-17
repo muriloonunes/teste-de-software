@@ -2,7 +2,7 @@
   <div class="section-title">
     <div class="title-block">
       <small>GESTÃO DE CATÁLOGO · FICHA TÉCNICA</small>
-      <h2>Pizzas e Adicionais</h2>
+      <h2>Pizzas, Bebidas e Adicionais</h2>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
       [attr.aria-selected]="secaoAtiva === 'adicionais'"
       [class.active]="secaoAtiva === 'adicionais'"
       (click)="secaoAtiva = 'adicionais'">
-      <span>🧀 Adicionais e Bordas</span>
+      <span>🥤 Acompanhamentos & Adicionais</span>
       <span class="tab-badge">{{ adicionais.length }}</span>
     </button>
   </div>
@@ -173,12 +173,12 @@
         </div>
 
         <div class="form-field">
-          <label class="field-label" for="adicionalNome">Nome do adicional *</label>
+          <label class="field-label" for="adicionalNome">Nome do item / adicional *</label>
           <input
             id="adicionalNome"
             [(ngModel)]="formAdicional.nome"
             name="adicionalNome"
-            placeholder="Ex: Borda de Catupiry, Extra Bacon"
+            placeholder="Ex: Coca-Cola 2L, Suco de Laranja, Borda Catupiry, Extra Bacon"
             [class.is-invalid]="errosAdicional['nome']"
             required>
           @if (errosAdicional['nome']) {
@@ -187,12 +187,12 @@
         </div>
 
         <div class="form-field">
-          <label class="field-label" for="adicionalDescricao">Descrição (opcional)</label>
+          <label class="field-label" for="adicionalDescricao">Categoria / Descrição (opcional)</label>
           <input
             id="adicionalDescricao"
             [(ngModel)]="formAdicional.descricao"
             name="adicionalDescricao"
-            placeholder="Ex: Porção extra de 100g">
+            placeholder="Ex: Bebida gelada 2L, Suco natural 500ml ou Modificador de pizza">
           @if (errosAdicional['descricao']) {
             <span class="field-error-text">✕ {{ errosAdicional['descricao'] }}</span>
           }
@@ -207,7 +207,7 @@
             type="number"
             step="0.50"
             min="0.01"
-            placeholder="Ex: 8.00"
+            placeholder="Ex: 14.00"
             [class.is-invalid]="errosAdicional['preco']"
             required>
           @if (errosAdicional['preco']) {
@@ -237,7 +237,7 @@
                 <span class="item-code">#{{ adicional.id | number:'2.0-0' }}</span>
                 <strong>{{ adicional.nome }}</strong>
               </div>
-              <p>{{ adicional.descricao || 'Sem descrição adicional' }}</p>
+              <p>{{ adicional.descricao || 'Acompanhamento / Adicional do cardápio' }}</p>
             </div>
             <div class="manager-item-actions">
               <div class="price-box">
@@ -252,9 +252,9 @@
           </article>
         } @empty {
           <div class="empty">
-            <strong>Nenhum adicional cadastrado</strong>
+            <strong>Nenhum acompanhamento ou adicional cadastrado</strong>
             <p style="margin: 6px 0 0; font-size: 12px; color: var(--dhm-gray-400);">
-              Utilize o formulário lateral para criar bordas recheadas ou ingredientes extras!
+              Utilize o formulário lateral para cadastrar bebidas (Coca-Cola, sucos), acompanhamentos ou bordas/extras!
             </p>
           </div>
         }

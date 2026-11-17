@@ -7,11 +7,12 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { PedidoService } from '../../core/services/pedido.service';
 import { Adicional } from '../../core/models/adicional.model';
-import { DadosEntrega, ItemCarrinho, Pagamento, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
+import { DadosEntrega, ItemAdicionalCarrinho, ItemCarrinho, Pagamento, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
 import { Pizza } from '../../core/models/pizza.model';
 import { CardapioManagerComponent } from './cardapio-manager/cardapio-manager';
 
 const CHAVE_CARRINHO = 'dhm-pizzaria-pedido-atual';
+const CHAVE_ACOMPANHAMENTOS = 'dhm-pizzaria-acompanhamentos-atual';
 
 @Component({
   selector: 'app-internal-screen',
@@ -41,6 +42,7 @@ export class InternalScreen implements OnInit {
   pagamentoSelecionadoId: number | undefined;
   pedidos: Pedido[] = [];
   carrinho: ItemCarrinho[] = this.loadCart();
+  acompanhamentosCarrinho: ItemAdicionalCarrinho[] = this.loadAcompanhamentos();
   abaAtiva: 'novo-pedido' | 'historico' | 'cardapio' = 'novo-pedido';
   categoria = 'Todas';
   busca = '';
@@ -100,7 +102,7 @@ export class InternalScreen implements OnInit {
         this.adicionais = adicionais;
         this.cdr.markForCheck();
       },
-      error: () => this.exibirFeedback('Não foi possível carregar os adicionais.', 'erro'),
+      error: () => this.exibirFeedback('Não foi possível carregar os acompanhamentos e adicionais.', 'erro'),
     });
     this.pedidoService.listarPagamentos().subscribe({
       next: pagamentos => {
@@ -126,12 +128,39 @@ export class InternalScreen implements OnInit {
     );
   }
 
-  get quantidadeCarrinho(): number {
+  get adicionaisFiltrados(): Adicional[] {
+    const termo = this.busca.toLowerCase().trim();
+    if (!termo) return this.adicionais;
+    return this.adicionais.filter(adicional =>
+      `${adicional.nome} ${adicional.descricao ?? ''}`.toLowerCase().includes(termo),
+    );
+  }
+
+  get quantidadePizzasCarrinho(): number {
     return this.carrinho.reduce((total, item) => total + item.quantidade, 0);
   }
 
-  get subtotal(): number {
+  get quantidadeAcompanhamentosCarrinho(): number {
+    return this.acompanhamentosCarrinho.reduce((total, item) => total + item.quantidade, 0);
+  }
+
+  get quantidadeCarrinho(): number {
+    return this.quantidadePizzasCarrinho + this.quantidadeAcompanhamentosCarrinho;
+  }
+
+  get subtotalPizzas(): number {
     return this.carrinho.reduce((total, item) => total + this.precoItem(item), 0);
+  }
+
+  get subtotalAcompanhamentos(): number {
+    return this.acompanhamentosCarrinho.reduce(
+      (total, item) => total + Number(item.adicional.preco) * item.quantidade,
+      0,
+    );
+  }
+
+  get subtotal(): number {
+    return this.subtotalPizzas + this.subtotalAcompanhamentos;
   }
 
   get pagamentoSelecionado(): Pagamento | undefined {
@@ -170,8 +199,9 @@ export class InternalScreen implements OnInit {
   }
 
   limparCarrinho(): void {
-    if (!this.carrinho.length) return;
+    if (!this.carrinho.length && !this.acompanhamentosCarrinho.length) return;
     this.carrinho = [];
+    this.acompanhamentosCarrinho = [];
     this.persistirCarrinho();
     this.exibirFeedback('Comanda limpa.', 'info');
   }
@@ -186,6 +216,10 @@ export class InternalScreen implements OnInit {
     const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
     const extras = (item.adicionais ?? []).reduce((total, adicional) => total + Number(adicional.preco), 0);
     return (Number(item.pizza.valorBase) * multiplicadores[item.tamanho] + extras) * item.quantidade;
+  }
+
+  precoAcompanhamento(item: ItemAdicionalCarrinho): number {
+    return Number(item.adicional.preco) * item.quantidade;
   }
 
   tamanhoSelecionado(pizza: Pizza): TamanhoPizza {
@@ -211,6 +245,51 @@ export class InternalScreen implements OnInit {
       item.adicionais.push(adicional);
     }
     this.persistirCarrinho();
+    this.cdr.markForCheck();
+  }
+
+  quantidadeAcompanhamentoNoPedido(adicionalId: number): number {
+    return this.acompanhamentosCarrinho.find(item => item.adicional.id === adicionalId)?.quantidade ?? 0;
+  }
+
+  adicionarAcompanhamento(adicional: Adicional): void {
+    const existente = this.acompanhamentosCarrinho.find(item => item.adicional.id === adicional.id);
+    if (existente) {
+      existente.quantidade += 1;
+    } else {
+      this.acompanhamentosCarrinho.push({ adicional, quantidade: 1 });
+    }
+    this.persistirCarrinho();
+    this.exibirFeedback(`🥤 ${adicional.nome} adicionado ao pedido!`, 'sucesso');
+  }
+
+  alterarQuantidadeAcompanhamento(index: number, delta: number): void {
+    const item = this.acompanhamentosCarrinho[index];
+    if (!item) return;
+    item.quantidade += delta;
+    if (item.quantidade <= 0) {
+      this.acompanhamentosCarrinho.splice(index, 1);
+      this.exibirFeedback(`"${item.adicional.nome}" removido do pedido.`, 'info');
+    }
+    this.persistirCarrinho();
+    this.cdr.markForCheck();
+  }
+
+  alterarQuantidadeAcompanhamentoPorId(adicional: Adicional, delta: number): void {
+    const idx = this.acompanhamentosCarrinho.findIndex(item => item.adicional.id === adicional.id);
+    if (idx >= 0) {
+      this.alterarQuantidadeAcompanhamento(idx, delta);
+    } else if (delta > 0) {
+      this.adicionarAcompanhamento(adicional);
+    }
+  }
+
+  removerAcompanhamento(index: number): void {
+    const item = this.acompanhamentosCarrinho[index];
+    this.acompanhamentosCarrinho.splice(index, 1);
+    this.persistirCarrinho();
+    this.exibirFeedback(`"${item?.adicional?.nome ?? 'Adicional'}" removido.`, 'info');
+    this.cdr.markForCheck();
   }
 
   adicionar(pizza: Pizza): void {
@@ -268,8 +347,8 @@ export class InternalScreen implements OnInit {
   finalizar(): void {
     const usuario = this.usuario();
     if (!usuario) return;
-    if (!this.carrinho.length) {
-      this.exibirFeedback('Adicione pelo menos uma pizza ao pedido antes de finalizar.', 'erro');
+    if (!this.carrinho.length && !this.acompanhamentosCarrinho.length) {
+      this.exibirFeedback('Adicione pelo menos um item ao pedido antes de finalizar.', 'erro');
       return;
     }
     if (!this.entrega.nome.trim() || !this.entrega.telefone.trim() || !this.entrega.endereco.trim()) {
@@ -277,8 +356,12 @@ export class InternalScreen implements OnInit {
       return;
     }
 
-    // Agrega quantidades de adicionais para enviar à API VendaService
+    // Agrega quantidades de acompanhamentos avulsos + modificadores de pizzas para enviar à API VendaService
     const mapaAdicionais = new Map<number, number>();
+    for (const acomp of this.acompanhamentosCarrinho) {
+      const atual = mapaAdicionais.get(acomp.adicional.id) ?? 0;
+      mapaAdicionais.set(acomp.adicional.id, atual + acomp.quantidade);
+    }
     for (const item of this.carrinho) {
       for (const adicional of item.adicionais ?? []) {
         const atual = mapaAdicionais.get(adicional.id) ?? 0;
@@ -308,6 +391,7 @@ export class InternalScreen implements OnInit {
       }).subscribe({
         next: () => {
           this.carrinho = [];
+          this.acompanhamentosCarrinho = [];
           this.persistirCarrinho();
           this.entrega = { nome: '', telefone: '', endereco: '' };
           this.carregarHistorico();
@@ -338,11 +422,20 @@ export class InternalScreen implements OnInit {
 
   private persistirCarrinho(): void {
     localStorage.setItem(CHAVE_CARRINHO, JSON.stringify(this.carrinho));
+    localStorage.setItem(CHAVE_ACOMPANHAMENTOS, JSON.stringify(this.acompanhamentosCarrinho));
   }
 
   private loadCart(): ItemCarrinho[] {
     try {
       return JSON.parse(localStorage.getItem(CHAVE_CARRINHO) || '[]') as ItemCarrinho[];
+    } catch {
+      return [];
+    }
+  }
+
+  private loadAcompanhamentos(): ItemAdicionalCarrinho[] {
+    try {
+      return JSON.parse(localStorage.getItem(CHAVE_ACOMPANHAMENTOS) || '[]') as ItemAdicionalCarrinho[];
     } catch {
       return [];
     }

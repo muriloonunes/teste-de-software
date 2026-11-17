@@ -10,6 +10,11 @@ export interface ItemCarrinho {
   adicionais: Adicional[];
 }
 
+export interface ItemAdicionalCarrinho {
+  adicional: Adicional;
+  quantidade: number;
+}
+
 export interface DadosEntrega {
   nome: string;
   telefone: string;

@@ -25,7 +25,7 @@
       [class.active]="abaAtiva === 'cardapio'"
       (click)="abaAtiva = 'cardapio'">
       <span class="tab-index">03</span> Cardápio
-      <span class="tab-counter">{{ pizzas.length }}</span>
+      <span class="tab-counter">{{ pizzas.length + adicionais.length }}</span>
     </button>
   </nav>
 
@@ -69,8 +69,8 @@
           <input
             id="search"
             [(ngModel)]="busca"
-            placeholder="Buscar sabor ou ingrediente..."
-            aria-label="Buscar pizza no cardápio">
+            placeholder="Buscar pizza, bebida ou adicional..."
+            aria-label="Buscar item no cardápio">
           @if (busca) {
             <button
               type="button"
@@ -96,7 +96,7 @@
           }
         </div>
         <span class="results-counter">
-          Exibindo <strong>{{ pizzasFiltradas.length }}</strong> de {{ pizzas.length }} itens
+          Exibindo <strong>{{ pizzasFiltradas.length }}</strong> pizzas · <strong>{{ adicionaisFiltrados.length }}</strong> adicionais
         </span>
       </div>
 
@@ -149,13 +149,61 @@
         } @empty {
           <div class="empty-state full-span">
             <strong>Nenhuma pizza encontrada</strong>
-            <p>Não encontramos itens para o filtro atual no cardápio.</p>
+            <p>Não encontramos pizzas para o filtro atual no cardápio.</p>
             @if (busca || categoria !== 'Todas') {
               <button type="button" class="secondary" (click)="limparFiltros()">Limpar filtros</button>
             }
           </div>
         }
       </div>
+
+      @if (adicionais.length > 0) {
+        <div class="accompaniments-section">
+          <div class="subsection-header">
+            <div>
+              <small>ITENS ACOMPANHANTES & EXTRAS AVULSOS</small>
+              <h3>🥤 Bebidas, Acompanhamentos & Adicionais</h3>
+            </div>
+            <span class="subsection-hint">Adicione bebidas, porções ou extras diretamente à comanda</span>
+          </div>
+
+          <div class="accompaniments-grid">
+            @for (adicional of adicionaisFiltrados; track adicional.id) {
+              <article class="accompaniment-card" [class.in-cart]="quantidadeAcompanhamentoNoPedido(adicional.id) > 0">
+                <div class="accompaniment-info">
+                  <div class="accompaniment-top">
+                    <span class="pizza-code">#{{ adicional.id | number:'2.0-0' }}</span>
+                    @if (quantidadeAcompanhamentoNoPedido(adicional.id) > 0) {
+                      <span class="in-cart-badge">{{ quantidadeAcompanhamentoNoPedido(adicional.id) }}x NA COMANDA</span>
+                    }
+                  </div>
+                  <h4>{{ adicional.nome }}</h4>
+                  <p>{{ adicional.descricao || 'Acompanhamento / Adicional avulso' }}</p>
+                </div>
+
+                <footer class="accompaniment-footer">
+                  <strong class="accompaniment-price">{{ adicional.preco | currency:'BRL' }}</strong>
+
+                  @if (quantidadeAcompanhamentoNoPedido(adicional.id) > 0) {
+                    <div class="cart-qty-controls" aria-label="Quantidade do acompanhamento">
+                      <button type="button" (click)="alterarQuantidadeAcompanhamentoPorId(adicional, -1)" aria-label="Diminuir">−</button>
+                      <span class="qty-count">{{ quantidadeAcompanhamentoNoPedido(adicional.id) }}</span>
+                      <button type="button" (click)="alterarQuantidadeAcompanhamentoPorId(adicional, 1)" aria-label="Aumentar">+</button>
+                    </div>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn-add-accompaniment"
+                      (click)="adicionarAcompanhamento(adicional)">
+                      + INCLUIR
+                    </button>
+                  }
+                </footer>
+              </article>
+            }
+          </div>
+        </div>
+      }
     </section>
   }
 
@@ -243,7 +291,7 @@
         <h2>Pedido em andamento</h2>
       </div>
       <div class="cart-header-actions">
-        @if (carrinho.length > 0) {
+        @if (carrinho.length > 0 || acompanhamentosCarrinho.length > 0) {
           <button type="button" class="btn-clear-cart" (click)="limparCarrinho()" title="Esvaziar comanda">
             Limpar
           </button>
@@ -253,56 +301,82 @@
     </div>
 
     <div class="cart-items-container">
-      @for (item of carrinho; track $index; let itemIndex = $index) {
-        <div class="cart-item-block">
-          <div class="cart-item">
-            <div class="cart-item-info">
-              <span class="item-name">{{ item.pizza.name }}</span>
-              <div class="cart-size-switcher" role="group" [attr.aria-label]="'Alterar tamanho de ' + item.pizza.name">
-                <span class="cart-size-label">TAM:</span>
-                @for (op of opcoesTamanho; track op.valor) {
-                  <button
-                    type="button"
-                    class="cart-size-btn"
-                    [class.active]="item.tamanho === op.valor"
-                    (click)="alterarTamanhoItem(itemIndex, op.valor)"
-                    [title]="'Mudar para ' + op.rotulo + ' (' + op.fatias + ')'">
-                    {{ op.sigla }}
-                  </button>
-                }
+      @if (carrinho.length > 0) {
+        <div class="cart-section-label">🍕 PIZZAS DO PEDIDO ({{ quantidadePizzasCarrinho }})</div>
+        @for (item of carrinho; track $index; let itemIndex = $index) {
+          <div class="cart-item-block">
+            <div class="cart-item">
+              <div class="cart-item-info">
+                <span class="item-name">{{ item.pizza.name }}</span>
+                <div class="cart-size-switcher" role="group" [attr.aria-label]="'Alterar tamanho de ' + item.pizza.name">
+                  <span class="cart-size-label">TAM:</span>
+                  @for (op of opcoesTamanho; track op.valor) {
+                    <button
+                      type="button"
+                      class="cart-size-btn"
+                      [class.active]="item.tamanho === op.valor"
+                      (click)="alterarTamanhoItem(itemIndex, op.valor)"
+                      [title]="'Mudar para ' + op.rotulo + ' (' + op.fatias + ')'">
+                      {{ op.sigla }}
+                    </button>
+                  }
+                </div>
               </div>
+              <div class="cart-qty-controls" aria-label="Quantidade do item">
+                <button type="button" (click)="alterarQuantidade(itemIndex, -1)" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-count">{{ item.quantidade }}</span>
+                <button type="button" (click)="alterarQuantidade(itemIndex, 1)" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
+              <button type="button" class="remove" (click)="remover(itemIndex)" title="Remover item" aria-label="Remover item">×</button>
             </div>
-            <div class="cart-qty-controls" aria-label="Quantidade do item">
-              <button type="button" (click)="alterarQuantidade(itemIndex, -1)" aria-label="Diminuir quantidade">−</button>
-              <span class="qty-count">{{ item.quantidade }}</span>
-              <button type="button" (click)="alterarQuantidade(itemIndex, 1)" aria-label="Aumentar quantidade">+</button>
-            </div>
-            <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
-            <button type="button" class="remove" (click)="remover(itemIndex)" title="Remover item" aria-label="Remover item">×</button>
-          </div>
 
-          @if (adicionais.length > 0) {
-            <div class="cart-item-adicionais">
-              <span class="adicionais-label">+ Adicionais / Bordas por unidade:</span>
-              <div class="adicionais-chips">
-                @for (adicional of adicionais; track adicional.id) {
-                  <button
-                    type="button"
-                    class="chip-adicional"
-                    [class.selected]="temAdicional(item, adicional)"
-                    (click)="alternarAdicional(item, adicional)">
-                    {{ temAdicional(item, adicional) ? '✓' : '+' }} {{ adicional.nome }} ({{ adicional.preco | currency:'BRL' }})
-                  </button>
-                }
+            @if (adicionais.length > 0) {
+              <div class="cart-item-adicionais">
+                <span class="adicionais-label">+ Modificador / Adicional nesta pizza:</span>
+                <div class="adicionais-chips">
+                  @for (adicional of adicionais; track adicional.id) {
+                    <button
+                      type="button"
+                      class="chip-adicional"
+                      [class.selected]="temAdicional(item, adicional)"
+                      (click)="alternarAdicional(item, adicional)">
+                      {{ temAdicional(item, adicional) ? '✓' : '+' }} {{ adicional.nome }} ({{ adicional.preco | currency:'BRL' }})
+                    </button>
+                  }
+                </div>
               </div>
+            }
+          </div>
+        }
+      }
+
+      @if (acompanhamentosCarrinho.length > 0) {
+        <div class="cart-section-label">🥤 ACOMPANHAMENTOS & BEBIDAS ({{ quantidadeAcompanhamentosCarrinho }})</div>
+        @for (acomp of acompanhamentosCarrinho; track acomp.adicional.id; let acompIndex = $index) {
+          <div class="cart-item-block cart-accompaniment-block">
+            <div class="cart-item">
+              <div class="cart-item-info">
+                <span class="item-name">{{ acomp.adicional.nome }}</span>
+                <small class="cart-unit-price">Unitário: {{ acomp.adicional.preco | currency:'BRL' }}</small>
+              </div>
+              <div class="cart-qty-controls" aria-label="Quantidade do acompanhamento">
+                <button type="button" (click)="alterarQuantidadeAcompanhamento(acompIndex, -1)" aria-label="Diminuir quantidade">−</button>
+                <span class="qty-count">{{ acomp.quantidade }}</span>
+                <button type="button" (click)="alterarQuantidadeAcompanhamento(acompIndex, 1)" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <strong class="item-price">{{ precoAcompanhamento(acomp) | currency:'BRL' }}</strong>
+              <button type="button" class="remove" (click)="removerAcompanhamento(acompIndex)" title="Remover acompanhamento" aria-label="Remover acompanhamento">×</button>
             </div>
-          }
-        </div>
-      } @empty {
+          </div>
+        }
+      }
+
+      @if (carrinho.length === 0 && acompanhamentosCarrinho.length === 0) {
         <div class="empty">
           <strong>Comanda vazia</strong>
           <p style="margin: 6px 0 0; font-size: 12px; color: var(--dhm-gray-400);">
-            Selecione um tamanho (P, M ou G) no cardápio e clique em "+ ADICIONAR" para iniciar o pedido.
+            Adicione pizzas ou itens acompanhantes (bebidas, bordas e extras) para iniciar o pedido.
           </p>
         </div>
       }
