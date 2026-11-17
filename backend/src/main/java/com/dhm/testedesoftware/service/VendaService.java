@@ -157,10 +157,13 @@ public class VendaService {
         BigDecimal total = BigDecimal.ZERO;
 
         for (ItemPedido item : venda.getPedidos()) {
-            BigDecimal valorPizza = item.getPizza().getValorBase()
-                    .multiply(BigDecimal.valueOf(item.getTamanho().getMultiplicadorTamanho()))
-                    .multiply(BigDecimal.valueOf(item.getQuantidade()));
-            valorPizza = valorPizza.setScale(2, RoundingMode.HALF_UP);
+            BigDecimal precoUnitario = arredondarPrecoPizza(
+                    item.getPizza().getValorBase()
+                            .multiply(BigDecimal.valueOf(item.getTamanho().getMultiplicadorTamanho()))
+            );
+            BigDecimal valorPizza = precoUnitario
+                    .multiply(BigDecimal.valueOf(item.getQuantidade()))
+                    .setScale(2, RoundingMode.HALF_UP);
             item.setValorPedido(valorPizza);
             total = total.add(valorPizza);
         }
@@ -174,5 +177,19 @@ public class VendaService {
         }
 
         return total.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal arredondarPrecoPizza(BigDecimal valorBruto) {
+        BigDecimal valorCentavos = valorBruto.setScale(2, RoundingMode.HALF_UP);
+        int centavos = valorCentavos.remainder(BigDecimal.ONE)
+                .movePointRight(2)
+                .abs()
+                .intValue();
+        int segundaCasa = centavos % 10;
+
+        if (segundaCasa == 5) {
+            return valorCentavos;
+        }
+        return valorCentavos.setScale(1, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.UNNECESSARY);
     }
 }

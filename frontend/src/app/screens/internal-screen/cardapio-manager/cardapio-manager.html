@@ -140,9 +140,9 @@
               </div>
               <p>{{ pizza.descricao }}</p>
               <div class="size-prices-preview">
-                <span>P (4 fat.): <b>{{ pizza.valorBase | currency:'BRL' }}</b></span>
-                <span>M (6 fat.): <b>{{ (pizza.valorBase * 1.5) | currency:'BRL' }}</b></span>
-                <span>G (8 fat.): <b>{{ (pizza.valorBase * 1.8) | currency:'BRL' }}</b></span>
+                <span>P (4 fat.): <b>{{ precoPorMultiplicador(pizza.valorBase, 1) | currency:'BRL' }}</b></span>
+                <span>M (6 fat.): <b>{{ precoPorMultiplicador(pizza.valorBase, 1.5) | currency:'BRL' }}</b></span>
+                <span>G (8 fat.): <b>{{ precoPorMultiplicador(pizza.valorBase, 1.8) | currency:'BRL' }}</b></span>
               </div>
             </div>
             <div class="manager-item-actions">

@@ -115,6 +115,20 @@ class TesteDeSoftwareApplicationTests {
         assertEquals(venda, encontrada);
     }
 
+    @Test
+    void deveArredondarSegundaCasaDecimalDoPrecoDaPizza() {
+        Pizza pizza = pizzaComValor("49.90");
+        // Pequena (1x): 49.90 -> 49.90
+        // Média (1.5x): 49.90 * 1.5 = 74.85 (segunda casa 5 -> mantém 74.85)
+        // Grande (1.8x): 49.90 * 1.8 = 89.82 (segunda casa 2 < 5 -> arredonda p/ baixo 89.80)
+        assertEquals(new BigDecimal("74.85"), vendaService.arredondarPrecoPizza(new BigDecimal("74.85")));
+        assertEquals(new BigDecimal("89.80"), vendaService.arredondarPrecoPizza(new BigDecimal("89.82")));
+        assertEquals(new BigDecimal("89.90"), vendaService.arredondarPrecoPizza(new BigDecimal("89.87")));
+
+        Venda vendaGrande = novaVenda(List.of(itemPedido(pizza, TamanhoPizza.GRANDE, 1)), List.of());
+        assertEquals(new BigDecimal("89.80"), vendaService.calcularTotal(vendaGrande));
+    }
+
     private static Pizza pizzaComValor(String valor) {
         Pizza pizza = new Pizza();
         pizza.setName("Calabresa");

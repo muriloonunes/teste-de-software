@@ -8,7 +8,7 @@ import { CatalogoService } from '../../core/services/catalogo.service';
 import { PedidoService } from '../../core/services/pedido.service';
 import { Adicional } from '../../core/models/adicional.model';
 import { DadosEntrega, ItemAdicionalCarrinho, ItemCarrinho, Pagamento, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
-import { Pizza } from '../../core/models/pizza.model';
+import { Pizza, arredondarPrecoPizza } from '../../core/models/pizza.model';
 import { CardapioManagerComponent } from './cardapio-manager/cardapio-manager';
 
 const CHAVE_CARRINHO = 'dhm-pizzaria-pedido-atual';
@@ -209,13 +209,14 @@ export class InternalScreen implements OnInit {
   precoPizzaPorTamanho(pizza: Pizza, tamanhoEspecifico?: TamanhoPizza): number {
     const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
     const tamanho = tamanhoEspecifico ?? this.tamanhoSelecionado(pizza);
-    return Number(pizza.valorBase) * multiplicadores[tamanho];
+    return arredondarPrecoPizza(Number(pizza.valorBase) * multiplicadores[tamanho]);
   }
 
   precoItem(item: ItemCarrinho): number {
     const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
+    const precoUnitarioPizza = arredondarPrecoPizza(Number(item.pizza.valorBase) * multiplicadores[item.tamanho]);
     const extras = (item.adicionais ?? []).reduce((total, adicional) => total + Number(adicional.preco), 0);
-    return (Number(item.pizza.valorBase) * multiplicadores[item.tamanho] + extras) * item.quantidade;
+    return (precoUnitarioPizza + extras) * item.quantidade;
   }
 
   precoAcompanhamento(item: ItemAdicionalCarrinho): number {

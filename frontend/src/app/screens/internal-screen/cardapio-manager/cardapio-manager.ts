@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 
 import { AdicionalFormulario, CatalogoService, PizzaFormulario } from '../../../core/services/catalogo.service';
 import { Adicional } from '../../../core/models/adicional.model';
-import { Pizza } from '../../../core/models/pizza.model';
+import { Pizza, arredondarPrecoPizza } from '../../../core/models/pizza.model';
 
 const PIZZA_VAZIA: PizzaFormulario = { name: '', descricao: '', categoria: '', valorBase: 0 };
 const ADICIONAL_VAZIO: AdicionalFormulario = { nome: '', descricao: '', preco: 0 };
@@ -53,6 +53,10 @@ export class CardapioManagerComponent implements OnInit {
       .map(p => p.categoria?.trim())
       .filter((c): c is string => !!c);
     return Array.from(new Set([...CATEGORIAS_PADRAO, ...existentes]));
+  }
+
+  precoPorMultiplicador(valorBase: number, multiplicador: number): number {
+    return arredondarPrecoPizza(Number(valorBase) * multiplicador);
   }
 
   ngOnInit(): void {
