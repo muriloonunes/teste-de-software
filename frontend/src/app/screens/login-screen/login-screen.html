@@ -1,8 +1,13 @@
 <main class="access-gate">
   <section class="access-card">
-    <div class="brand"><span>🍕</span>DHM <b>Pizzaria</b></div>
-    <small>ÁREA INTERNA</small>
-    <h1>Painel do atendente</h1>
+    <div class="brand">
+      <span class="brand-badge">🍕</span>
+      <div class="brand-text">DHM <b>Pizzaria</b></div>
+    </div>
+
+    <div class="header-block">
+      <h1>Painel do atendente</h1>
+    </div>
 
     @if (cadastroConcluido) {
       <div class="success-panel">
@@ -13,22 +18,38 @@
         </div>
         <h2>Conta criada com sucesso!</h2>
         <p>Bem-vindo(a) à equipe, <strong>{{ nomeCadastrado }}</strong>! Seu cadastro foi concluído e seu acesso está liberado.</p>
-        <div class="success-tip">Seu e-mail já foi preenchido na tela de login. Basta informar sua senha para entrar.</div>
-        <button class="primary full" type="button" (click)="irParaLogin()">Acessar painel agora</button>
+        <div class="success-tip">
+          <strong>[PRÓXIMO PASSO]</strong> Seu e-mail já foi preenchido na tela de login. Basta informar sua senha para iniciar o turno.
+        </div>
+        <button class="primary full" type="button" (click)="irParaLogin()">Acessar painel agora →</button>
       </div>
     } @else {
-      <p class="subtitle">Acesso restrito à equipe da pizzaria. Entre com sua conta ou crie um novo acesso para gerenciar os pedidos.</p>
+      <p class="subtitle">Acesso restrito à equipe da pizzaria. Autentique-se com sua credencial ou cadastre um novo operador de caixa.</p>
 
-      <div class="access-tabs">
-        <button type="button" [class.active]="modoAcesso === 'login'" (click)="alternarModoAcesso('login')">Entrar</button>
-        <button type="button" [class.active]="modoAcesso === 'cadastro'" (click)="alternarModoAcesso('cadastro')">Criar conta</button>
+      <div class="access-tabs" role="tablist" aria-label="Modo de acesso">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="modoAcesso === 'login'"
+          [class.active]="modoAcesso === 'login'"
+          (click)="alternarModoAcesso('login')">
+          01. Entrar
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="modoAcesso === 'cadastro'"
+          [class.active]="modoAcesso === 'cadastro'"
+          (click)="alternarModoAcesso('cadastro')">
+          02. Criar conta
+        </button>
       </div>
 
       @if (erro) {
         <div class="alert-box alert-error" role="alert">
           <span class="alert-icon">⚠️</span>
           <div class="alert-content">
-            <strong>{{ emailConflito ? 'E-mail já cadastrado' : 'Atenção' }}</strong>
+            <strong>{{ emailConflito ? 'E-mail já cadastrado' : 'Falha de validação' }}</strong>
             <span>{{ erro }}</span>
             @if (emailConflito) {
               <div>
@@ -44,7 +65,9 @@
       @if (modoAcesso === 'login') {
         <form class="access-form" (ngSubmit)="autenticar()" novalidate>
           <div class="form-field">
-            <label class="field-label" for="loginEmail">E-mail</label>
+            <label class="field-label" for="loginEmail">
+              <span>E-mail do operador</span>
+            </label>
             <input
               id="loginEmail"
               [(ngModel)]="login.email"
@@ -56,14 +79,16 @@
           </div>
 
           <div class="form-field">
-            <label class="field-label" for="loginSenha">Senha</label>
+            <label class="field-label" for="loginSenha">
+              <span>Senha de acesso</span>
+            </label>
             <div class="input-with-action">
               <input
                 id="loginSenha"
                 [(ngModel)]="login.senha"
                 name="loginSenha"
                 [type]="mostrarSenhaLogin ? 'text' : 'password'"
-                placeholder="Sua senha"
+                placeholder="••••••••"
                 autocomplete="current-password"
                 required>
               <button
@@ -89,16 +114,18 @@
 
           <button class="primary full" type="submit" [disabled]="carregando">
             @if (carregando) {
-              <span class="spinner-inline"></span> Entrando...
+              <span class="spinner-inline"></span> Autenticando...
             } @else {
-              Entrar
+              Iniciar turno →
             }
           </button>
         </form>
       } @else {
         <form class="access-form" (ngSubmit)="cadastrar()" novalidate>
           <div class="form-field">
-            <label class="field-label" for="cadastroNome">Nome completo</label>
+            <label class="field-label" for="cadastroNome">
+              <span>Nome completo</span>
+            </label>
             <input
               id="cadastroNome"
               [(ngModel)]="cadastro.nome"
@@ -116,7 +143,9 @@
           </div>
 
           <div class="form-field">
-            <label class="field-label" for="cadastroEmail">E-mail corporativo / acesso</label>
+            <label class="field-label" for="cadastroEmail">
+              <span>E-mail corporativo / acesso</span>
+            </label>
             <input
               id="cadastroEmail"
               [(ngModel)]="cadastro.email"
@@ -134,7 +163,9 @@
           </div>
 
           <div class="form-field">
-            <label class="field-label" for="cadastroSenha">Senha</label>
+            <label class="field-label" for="cadastroSenha">
+              <span>Senha</span>
+            </label>
             <div class="input-with-action">
               <input
                 id="cadastroSenha"
@@ -177,7 +208,9 @@
           </div>
 
           <div class="form-field">
-            <label class="field-label" for="cadastroConfirmarSenha">Confirmar senha</label>
+            <label class="field-label" for="cadastroConfirmarSenha">
+              <span>Confirmar senha</span>
+            </label>
             <div class="input-with-action">
               <input
                 id="cadastroConfirmarSenha"
@@ -225,7 +258,7 @@
             @if (carregando) {
               <span class="spinner-inline"></span> Criando conta...
             } @else {
-              Cadastrar atendente
+              Cadastrar atendente →
             }
           </button>
         </form>

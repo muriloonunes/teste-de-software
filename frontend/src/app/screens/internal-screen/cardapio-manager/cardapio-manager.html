@@ -1,14 +1,29 @@
 <section class="cardapio-manager">
   <div class="section-title">
-    <div><small>GESTÃO DE CARDÁPIO</small><h2>Pizzas e adicionais</h2></div>
+    <div class="title-block">
+      <small>GESTÃO DE CATÁLOGO · FICHA TÉCNICA</small>
+      <h2>Pizzas e Adicionais</h2>
+    </div>
   </div>
 
-  <div class="manager-tabs">
-    <button type="button" [class.active]="secaoAtiva === 'pizzas'" (click)="secaoAtiva = 'pizzas'">
-      🍕 Pizzas ({{ pizzas.length }})
+  <div class="manager-tabs" role="tablist" aria-label="Seções do catálogo">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="secaoAtiva === 'pizzas'"
+      [class.active]="secaoAtiva === 'pizzas'"
+      (click)="secaoAtiva = 'pizzas'">
+      <span>🍕 Pizzas</span>
+      <span class="tab-badge">{{ pizzas.length }}</span>
     </button>
-    <button type="button" [class.active]="secaoAtiva === 'adicionais'" (click)="secaoAtiva = 'adicionais'">
-      🧀 Adicionais ({{ adicionais.length }})
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="secaoAtiva === 'adicionais'"
+      [class.active]="secaoAtiva === 'adicionais'"
+      (click)="secaoAtiva = 'adicionais'">
+      <span>🧀 Adicionais e Bordas</span>
+      <span class="tab-badge">{{ adicionais.length }}</span>
     </button>
   </div>
 
@@ -16,7 +31,7 @@
     <div class="alert-box" [ngClass]="tipoMensagem === 'erro' ? 'alert-error' : 'alert-success'" role="alert">
       <span class="alert-icon">{{ tipoMensagem === 'erro' ? '⚠️' : '✓' }}</span>
       <div class="alert-content">
-        <strong>{{ tipoMensagem === 'erro' ? 'Atenção' : 'Sucesso' }}</strong>
+        <strong>{{ tipoMensagem === 'erro' ? 'Atenção' : 'Operação concluída' }}</strong>
         <span>{{ mensagem }}</span>
       </div>
     </div>
@@ -24,8 +39,13 @@
 
   @if (secaoAtiva === 'pizzas') {
     <div class="manager-layout">
-      <form class="manager-form" (ngSubmit)="salvarPizza()" novalidate>
-        <h3>{{ pizzaEmEdicao ? '✏️ Editar pizza' : '➕ Nova pizza' }}</h3>
+      <form class="manager-form" [class.editing-mode]="pizzaEmEdicao" (ngSubmit)="salvarPizza()" novalidate>
+        <div class="form-header-strip">
+          <span class="mode-tag" [class.editing]="pizzaEmEdicao">
+            {{ pizzaEmEdicao ? 'MODO EDIÇÃO #' + pizzaEmEdicao.id : 'NOVO REGISTRO' }}
+          </span>
+          <h3>{{ pizzaEmEdicao ? 'Editar Pizza' : 'Cadastrar Pizza' }}</h3>
+        </div>
 
         <div class="form-field">
           <label class="field-label" for="pizzaNome">Nome da pizza *</label>
@@ -82,7 +102,7 @@
             [class.is-invalid]="errosPizza['valorBase']"
             required>
           <span class="field-hint-text">
-            Tamanhos no pedido: Pequena (1x) · Média (1.5x) · Grande (1.8x)
+            Escala automática: P (1x) · M (1.5x) · G (1.8x)
           </span>
           @if (errosPizza['valorBase']) {
             <span class="field-error-text">✕ {{ errosPizza['valorBase'] }}</span>
@@ -94,7 +114,7 @@
             @if (salvandoPizza) {
               <span class="spinner-inline"></span> Salvando...
             } @else {
-              {{ pizzaEmEdicao ? 'Salvar alterações' : 'Cadastrar pizza' }}
+              {{ pizzaEmEdicao ? 'Salvar alterações' : '+ Cadastrar pizza' }}
             }
           </button>
           @if (pizzaEmEdicao) {
@@ -105,9 +125,10 @@
 
       <div class="manager-list">
         @for (pizza of pizzas; track pizza.id) {
-          <article class="manager-item">
+          <article class="manager-item" [class.is-editing]="pizzaEmEdicao?.id === pizza.id">
             <div class="manager-item-info">
               <div class="manager-item-title">
+                <span class="item-code">#{{ pizza.id | number:'2.0-0' }}</span>
                 <strong>{{ pizza.name }}</strong>
                 <small class="badge-category">{{ pizza.categoria }}</small>
               </div>
@@ -119,13 +140,23 @@
               </div>
             </div>
             <div class="manager-item-actions">
-              <strong class="manager-item-price">{{ pizza.valorBase | currency:'BRL' }}</strong>
-              <button class="link" type="button" (click)="editarPizza(pizza)">Editar</button>
-              <button class="link danger" type="button" (click)="excluirPizza(pizza)">Excluir</button>
+              <div class="price-box">
+                <small>BASE (P)</small>
+                <strong class="manager-item-price">{{ pizza.valorBase | currency:'BRL' }}</strong>
+              </div>
+              <div class="action-buttons">
+                <button class="btn-item-action" type="button" (click)="editarPizza(pizza)">Editar</button>
+                <button class="btn-item-action danger" type="button" (click)="excluirPizza(pizza)">Excluir</button>
+              </div>
             </div>
           </article>
         } @empty {
-          <p class="empty">Nenhuma pizza cadastrada no cardápio. Utilize o formulário ao lado para criar a primeira!</p>
+          <div class="empty">
+            <strong>Nenhuma pizza cadastrada no cardápio</strong>
+            <p style="margin: 6px 0 0; font-size: 12px; color: var(--dhm-gray-400);">
+              Utilize o formulário lateral para registrar a primeira pizza da casa.
+            </p>
+          </div>
         }
       </div>
     </div>
@@ -133,8 +164,13 @@
 
   @if (secaoAtiva === 'adicionais') {
     <div class="manager-layout">
-      <form class="manager-form" (ngSubmit)="salvarAdicional()" novalidate>
-        <h3>{{ adicionalEmEdicao ? '✏️ Editar adicional' : '➕ Novo adicional' }}</h3>
+      <form class="manager-form" [class.editing-mode]="adicionalEmEdicao" (ngSubmit)="salvarAdicional()" novalidate>
+        <div class="form-header-strip">
+          <span class="mode-tag" [class.editing]="adicionalEmEdicao">
+            {{ adicionalEmEdicao ? 'MODO EDIÇÃO #' + adicionalEmEdicao.id : 'NOVO REGISTRO' }}
+          </span>
+          <h3>{{ adicionalEmEdicao ? 'Editar Adicional' : 'Cadastrar Adicional' }}</h3>
+        </div>
 
         <div class="form-field">
           <label class="field-label" for="adicionalNome">Nome do adicional *</label>
@@ -184,7 +220,7 @@
             @if (salvandoAdicional) {
               <span class="spinner-inline"></span> Salvando...
             } @else {
-              {{ adicionalEmEdicao ? 'Salvar alterações' : 'Cadastrar adicional' }}
+              {{ adicionalEmEdicao ? 'Salvar alterações' : '+ Cadastrar adicional' }}
             }
           </button>
           @if (adicionalEmEdicao) {
@@ -195,19 +231,32 @@
 
       <div class="manager-list">
         @for (adicional of adicionais; track adicional.id) {
-          <article class="manager-item">
+          <article class="manager-item" [class.is-editing]="adicionalEmEdicao?.id === adicional.id">
             <div class="manager-item-info">
-              <strong>{{ adicional.nome }}</strong>
+              <div class="manager-item-title">
+                <span class="item-code">#{{ adicional.id | number:'2.0-0' }}</span>
+                <strong>{{ adicional.nome }}</strong>
+              </div>
               <p>{{ adicional.descricao || 'Sem descrição adicional' }}</p>
             </div>
             <div class="manager-item-actions">
-              <strong class="manager-item-price">{{ adicional.preco | currency:'BRL' }}</strong>
-              <button class="link" type="button" (click)="editarAdicional(adicional)">Editar</button>
-              <button class="link danger" type="button" (click)="excluirAdicional(adicional)">Excluir</button>
+              <div class="price-box">
+                <small>UNITÁRIO</small>
+                <strong class="manager-item-price">{{ adicional.preco | currency:'BRL' }}</strong>
+              </div>
+              <div class="action-buttons">
+                <button class="btn-item-action" type="button" (click)="editarAdicional(adicional)">Editar</button>
+                <button class="btn-item-action danger" type="button" (click)="excluirAdicional(adicional)">Excluir</button>
+              </div>
             </div>
           </article>
         } @empty {
-          <p class="empty">Nenhum adicional cadastrado. Utilize o formulário ao lado para criar bordas ou ingredientes extras!</p>
+          <div class="empty">
+            <strong>Nenhum adicional cadastrado</strong>
+            <p style="margin: 6px 0 0; font-size: 12px; color: var(--dhm-gray-400);">
+              Utilize o formulário lateral para criar bordas recheadas ou ingredientes extras!
+            </p>
+          </div>
         }
       </div>
     </div>

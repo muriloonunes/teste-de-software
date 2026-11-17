@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -29,6 +29,12 @@ export class InternalScreen implements OnInit {
 
   readonly usuario = this.authState.usuario;
 
+  readonly opcoesTamanho: { valor: TamanhoPizza; sigla: string; rotulo: string; fatias: string }[] = [
+    { valor: 'PEQUENA', sigla: 'P', rotulo: 'Pequena', fatias: '4 fatias' },
+    { valor: 'MEDIA', sigla: 'M', rotulo: 'Média', fatias: '6 fatias' },
+    { valor: 'GRANDE', sigla: 'G', rotulo: 'Grande', fatias: '8 fatias' },
+  ];
+
   pizzas: Pizza[] = [];
   adicionais: Adicional[] = [];
   pagamentos: Pagamento[] = [];
@@ -44,6 +50,14 @@ export class InternalScreen implements OnInit {
   private timerMensagem: ReturnType<typeof setTimeout> | null = null;
   entrega: DadosEntrega = { nome: '', telefone: '', endereco: '' };
   private readonly tamanhosSelecionados = new Map<number, TamanhoPizza>();
+
+  @HostListener('document:keydown.escape')
+  fecharComEscape(): void {
+    if (this.carrinhoAberto) {
+      this.carrinhoAberto = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   ngOnInit(): void {
     this.carregarCatalogo();
@@ -120,13 +134,51 @@ export class InternalScreen implements OnInit {
     return this.carrinho.reduce((total, item) => total + this.precoItem(item), 0);
   }
 
+  get pagamentoSelecionado(): Pagamento | undefined {
+    return this.pagamentos.find(p => p.id === Number(this.pagamentoSelecionadoId));
+  }
+
+  get percentualTaxaPagamento(): number {
+    return Number(this.pagamentoSelecionado?.taxa ?? 0);
+  }
+
+  get valorTaxaPagamento(): number {
+    return this.subtotal * (this.percentualTaxaPagamento / 100);
+  }
+
+  get totalFinal(): number {
+    return this.subtotal + this.valorTaxaPagamento;
+  }
+
+  get valorParcela(): number {
+    const parcelas = Number(this.pagamentoSelecionado?.parcelas ?? 1);
+    return parcelas > 1 ? this.totalFinal / parcelas : this.totalFinal;
+  }
+
   get faturamentoHistorico(): number {
     return this.pedidos.reduce((total, pedido) => total + Number(pedido.valor), 0);
   }
 
-  precoPizzaPorTamanho(pizza: Pizza): number {
+  get ticketMedioHistorico(): number {
+    if (!this.pedidos.length) return 0;
+    return this.faturamentoHistorico / this.pedidos.length;
+  }
+
+  limparFiltros(): void {
+    this.busca = '';
+    this.categoria = 'Todas';
+  }
+
+  limparCarrinho(): void {
+    if (!this.carrinho.length) return;
+    this.carrinho = [];
+    this.persistirCarrinho();
+    this.exibirFeedback('Comanda limpa.', 'info');
+  }
+
+  precoPizzaPorTamanho(pizza: Pizza, tamanhoEspecifico?: TamanhoPizza): number {
     const multiplicadores: Record<TamanhoPizza, number> = { PEQUENA: 1, MEDIA: 1.5, GRANDE: 1.8 };
-    const tamanho = this.tamanhoSelecionado(pizza);
+    const tamanho = tamanhoEspecifico ?? this.tamanhoSelecionado(pizza);
     return Number(pizza.valorBase) * multiplicadores[tamanho];
   }
 
@@ -173,6 +225,28 @@ export class InternalScreen implements OnInit {
     }
     this.persistirCarrinho();
     this.exibirFeedback(`🍕 ${pizza.name} (${tamanho.toLowerCase()}) adicionada!`, 'sucesso');
+  }
+
+  alterarTamanhoItem(index: number, novoTamanho: TamanhoPizza): void {
+    const item = this.carrinho[index];
+    if (!item || item.tamanho === novoTamanho) return;
+
+    const idsAdicionaisItem = (item.adicionais ?? []).map(a => a.id).sort().join(',');
+    const indiceExistente = this.carrinho.findIndex((outro, idx) => {
+      if (idx === index) return false;
+      const idsOutro = (outro.adicionais ?? []).map(a => a.id).sort().join(',');
+      return outro.pizza.id === item.pizza.id && outro.tamanho === novoTamanho && idsOutro === idsAdicionaisItem;
+    });
+
+    if (indiceExistente >= 0) {
+      this.carrinho[indiceExistente].quantidade += item.quantidade;
+      this.carrinho.splice(index, 1);
+    } else {
+      item.tamanho = novoTamanho;
+    }
+
+    this.persistirCarrinho();
+    this.cdr.markForCheck();
   }
 
   alterarQuantidade(index: number, delta: number): void {
