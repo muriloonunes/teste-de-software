@@ -102,10 +102,15 @@
 
       <div class="pizza-grid">
         @for (pizza of pizzasFiltradas; track pizza.id) {
-          <article class="pizza-card">
+          <article class="pizza-card" [class.in-cart]="quantidadePizzaNoPedido(pizza.id) > 0">
             <header class="pizza-card-top">
               <span class="pizza-cat-tag">{{ pizza.categoria }}</span>
-              <span class="pizza-code">#{{ pizza.id | number:'2.0-0' }}</span>
+              <div class="pizza-top-meta">
+                @if (quantidadePizzaNoPedido(pizza.id) > 0) {
+                  <span class="in-cart-badge">{{ quantidadePizzaNoPedido(pizza.id) }}x NA COMANDA</span>
+                }
+                <span class="pizza-code">#{{ pizza.id | number:'2.0-0' }}</span>
+              </div>
             </header>
 
             <div class="pizza-content">
@@ -330,23 +335,6 @@
               <strong class="item-price">{{ precoItem(item) | currency:'BRL' }}</strong>
               <button type="button" class="remove" (click)="remover(itemIndex)" title="Remover item" aria-label="Remover item">×</button>
             </div>
-
-            @if (adicionais.length > 0) {
-              <div class="cart-item-adicionais">
-                <span class="adicionais-label">+ Modificador / Adicional nesta pizza:</span>
-                <div class="adicionais-chips">
-                  @for (adicional of adicionais; track adicional.id) {
-                    <button
-                      type="button"
-                      class="chip-adicional"
-                      [class.selected]="temAdicional(item, adicional)"
-                      (click)="alternarAdicional(item, adicional)">
-                      {{ temAdicional(item, adicional) ? '✓' : '+' }} {{ adicional.nome }} ({{ adicional.preco | currency:'BRL' }})
-                    </button>
-                  }
-                </div>
-              </div>
-            }
           </div>
         }
       }

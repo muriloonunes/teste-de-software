@@ -401,13 +401,24 @@
   box-shadow: 7px 7px 0px var(--dhm-ink);
 }
 
+.pizza-card.in-cart {
+  border-color: var(--dhm-green-400);
+}
+
 .pizza-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   padding: 10px 16px;
   background: var(--dhm-bg-surface);
   border-bottom: 2px solid var(--dhm-border-medium);
+}
+
+.pizza-top-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pizza-cat-tag {

@@ -321,6 +321,13 @@
   border-color: var(--dhm-white);
 }
 
+.btn-item-action.danger.confirming {
+  background: var(--dhm-red-500);
+  color: var(--dhm-white);
+  border-color: var(--dhm-yellow-400);
+  box-shadow: 3px 3px 0px var(--dhm-yellow-400);
+}
+
 @media (max-width: 860px) {
   .manager-layout {
     grid-template-columns: 1fr;

@@ -9,6 +9,7 @@ import { Pizza } from '../../../core/models/pizza.model';
 
 const PIZZA_VAZIA: PizzaFormulario = { name: '', descricao: '', categoria: '', valorBase: 0 };
 const ADICIONAL_VAZIO: AdicionalFormulario = { nome: '', descricao: '', preco: 0 };
+const CATEGORIAS_PADRAO = ['Tradicionais', 'Especiais', 'Doces', 'Vegetarianas'];
 
 @Component({
   selector: 'app-cardapio-manager',
@@ -33,6 +34,11 @@ export class CardapioManagerComponent implements OnInit {
   salvandoPizza = false;
   salvandoAdicional = false;
 
+  confirmandoExclusaoPizzaId: number | null = null;
+  confirmandoExclusaoAdicionalId: number | null = null;
+  private timerConfirmacaoPizza: ReturnType<typeof setTimeout> | null = null;
+  private timerConfirmacaoAdicional: ReturnType<typeof setTimeout> | null = null;
+
   formPizza: PizzaFormulario = { ...PIZZA_VAZIA };
   formAdicional: AdicionalFormulario = { ...ADICIONAL_VAZIO };
   errosPizza: Record<string, string> = {};
@@ -41,6 +47,13 @@ export class CardapioManagerComponent implements OnInit {
   mensagem = '';
   tipoMensagem: 'sucesso' | 'erro' = 'sucesso';
   private timerMensagem: ReturnType<typeof setTimeout> | null = null;
+
+  get categoriasSugeridas(): string[] {
+    const existentes = this.pizzas
+      .map(p => p.categoria?.trim())
+      .filter((c): c is string => !!c);
+    return Array.from(new Set([...CATEGORIAS_PADRAO, ...existentes]));
+  }
 
   ngOnInit(): void {
     this.carregarPizzas();
@@ -137,7 +150,27 @@ export class CardapioManagerComponent implements OnInit {
   }
 
   excluirPizza(pizza: Pizza): void {
-    if (!confirm(`Remover a pizza "${pizza.name}" do cardápio?`)) return;
+    if (this.confirmandoExclusaoPizzaId !== pizza.id) {
+      this.confirmandoExclusaoPizzaId = pizza.id;
+      if (this.timerConfirmacaoPizza) {
+        clearTimeout(this.timerConfirmacaoPizza);
+      }
+      this.timerConfirmacaoPizza = setTimeout(() => {
+        if (this.confirmandoExclusaoPizzaId === pizza.id) {
+          this.confirmandoExclusaoPizzaId = null;
+          this.cdr.markForCheck();
+        }
+      }, 3000);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.timerConfirmacaoPizza) {
+      clearTimeout(this.timerConfirmacaoPizza);
+      this.timerConfirmacaoPizza = null;
+    }
+    this.confirmandoExclusaoPizzaId = null;
+
     this.catalogoService.excluirPizza(pizza.id).subscribe({
       next: () => {
         this.exibirMensagem('Pizza removida do cardápio.', 'sucesso');
@@ -212,7 +245,27 @@ export class CardapioManagerComponent implements OnInit {
   }
 
   excluirAdicional(adicional: Adicional): void {
-    if (!confirm(`Remover o adicional "${adicional.nome}"?`)) return;
+    if (this.confirmandoExclusaoAdicionalId !== adicional.id) {
+      this.confirmandoExclusaoAdicionalId = adicional.id;
+      if (this.timerConfirmacaoAdicional) {
+        clearTimeout(this.timerConfirmacaoAdicional);
+      }
+      this.timerConfirmacaoAdicional = setTimeout(() => {
+        if (this.confirmandoExclusaoAdicionalId === adicional.id) {
+          this.confirmandoExclusaoAdicionalId = null;
+          this.cdr.markForCheck();
+        }
+      }, 3000);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.timerConfirmacaoAdicional) {
+      clearTimeout(this.timerConfirmacaoAdicional);
+      this.timerConfirmacaoAdicional = null;
+    }
+    this.confirmandoExclusaoAdicionalId = null;
+
     this.catalogoService.excluirAdicional(adicional.id).subscribe({
       next: () => {
         this.exibirMensagem('Adicional removido.', 'sucesso');

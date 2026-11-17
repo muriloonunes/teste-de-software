@@ -248,6 +248,12 @@ export class InternalScreen implements OnInit {
     this.cdr.markForCheck();
   }
 
+  quantidadePizzaNoPedido(pizzaId: number): number {
+    return this.carrinho
+      .filter(item => item.pizza.id === pizzaId)
+      .reduce((total, item) => total + item.quantidade, 0);
+  }
+
   quantidadeAcompanhamentoNoPedido(adicionalId: number): number {
     return this.acompanhamentosCarrinho.find(item => item.adicional.id === adicionalId)?.quantidade ?? 0;
   }

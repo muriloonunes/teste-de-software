@@ -67,9 +67,15 @@
             id="pizzaCategoria"
             [(ngModel)]="formPizza.categoria"
             name="pizzaCategoria"
+            list="categorias-lista"
             placeholder="Ex: Tradicionais, Especiais, Doces"
             [class.is-invalid]="errosPizza['categoria']"
             required>
+          <datalist id="categorias-lista">
+            @for (cat of categoriasSugeridas; track cat) {
+              <option [value]="cat"></option>
+            }
+          </datalist>
           @if (errosPizza['categoria']) {
             <span class="field-error-text">✕ {{ errosPizza['categoria'] }}</span>
           }
@@ -146,7 +152,13 @@
               </div>
               <div class="action-buttons">
                 <button class="btn-item-action" type="button" (click)="editarPizza(pizza)">Editar</button>
-                <button class="btn-item-action danger" type="button" (click)="excluirPizza(pizza)">Excluir</button>
+                <button
+                  class="btn-item-action danger"
+                  [class.confirming]="confirmandoExclusaoPizzaId === pizza.id"
+                  type="button"
+                  (click)="excluirPizza(pizza)">
+                  {{ confirmandoExclusaoPizzaId === pizza.id ? 'Confirmar?' : 'Excluir' }}
+                </button>
               </div>
             </div>
           </article>
@@ -246,7 +258,13 @@
               </div>
               <div class="action-buttons">
                 <button class="btn-item-action" type="button" (click)="editarAdicional(adicional)">Editar</button>
-                <button class="btn-item-action danger" type="button" (click)="excluirAdicional(adicional)">Excluir</button>
+                <button
+                  class="btn-item-action danger"
+                  [class.confirming]="confirmandoExclusaoAdicionalId === adicional.id"
+                  type="button"
+                  (click)="excluirAdicional(adicional)">
+                  {{ confirmandoExclusaoAdicionalId === adicional.id ? 'Confirmar?' : 'Excluir' }}
+                </button>
               </div>
             </div>
           </article>
