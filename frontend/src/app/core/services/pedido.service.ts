@@ -3,11 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_URL } from '../api-config';
-import { Cliente, DadosEntrega, NovaVenda, Pedido } from '../models/pedido.model';
+import { Cliente, DadosEntrega, NovaVenda, Pagamento, Pedido } from '../models/pedido.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
   private readonly http = inject(HttpClient);
+
+  listarPagamentos(): Observable<Pagamento[]> {
+    return this.http.get<Pagamento[]>(`${API_URL}/pagamentos`);
+  }
 
   criarCliente(dadosEntrega: DadosEntrega): Observable<Cliente> {
     return this.http.post<Cliente>(`${API_URL}/clientes`, dadosEntrega);

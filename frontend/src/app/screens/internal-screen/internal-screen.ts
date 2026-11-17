@@ -7,7 +7,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { PedidoService } from '../../core/services/pedido.service';
 import { Adicional } from '../../core/models/adicional.model';
-import { DadosEntrega, ItemCarrinho, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
+import { DadosEntrega, ItemCarrinho, Pagamento, Pedido, TamanhoPizza } from '../../core/models/pedido.model';
 import { Pizza } from '../../core/models/pizza.model';
 import { CardapioManagerComponent } from './cardapio-manager/cardapio-manager';
 
@@ -31,6 +31,8 @@ export class InternalScreen implements OnInit {
 
   pizzas: Pizza[] = [];
   adicionais: Adicional[] = [];
+  pagamentos: Pagamento[] = [];
+  pagamentoSelecionadoId: number | undefined;
   pedidos: Pedido[] = [];
   carrinho: ItemCarrinho[] = this.loadCart();
   abaAtiva: 'novo-pedido' | 'historico' | 'cardapio' = 'novo-pedido';
@@ -44,7 +46,6 @@ export class InternalScreen implements OnInit {
   private readonly tamanhosSelecionados = new Map<number, TamanhoPizza>();
 
   ngOnInit(): void {
-    this.entrega.nome = this.usuario()?.nome ?? '';
     this.carregarCatalogo();
     this.carregarHistorico();
   }
@@ -86,6 +87,16 @@ export class InternalScreen implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => this.exibirFeedback('Não foi possível carregar os adicionais.', 'erro'),
+    });
+    this.pedidoService.listarPagamentos().subscribe({
+      next: pagamentos => {
+        this.pagamentos = pagamentos;
+        if (!this.pagamentoSelecionadoId && pagamentos.length > 0) {
+          this.pagamentoSelecionadoId = pagamentos[0].id;
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => this.exibirFeedback('Não foi possível carregar as formas de pagamento.', 'erro'),
     });
   }
 
@@ -213,6 +224,7 @@ export class InternalScreen implements OnInit {
       next: cliente => this.pedidoService.criarVenda({
         clienteId: cliente.id,
         usuarioId: usuario.id,
+        pagamentoId: this.pagamentoSelecionadoId,
         pedidos: this.carrinho.map(item => ({
           pizzaId: item.pizza.id,
           tamanho: item.tamanho,
@@ -223,8 +235,7 @@ export class InternalScreen implements OnInit {
         next: () => {
           this.carrinho = [];
           this.persistirCarrinho();
-          this.entrega.telefone = '';
-          this.entrega.endereco = '';
+          this.entrega = { nome: '', telefone: '', endereco: '' };
           this.carregarHistorico();
           this.abaAtiva = 'historico';
           this.carrinhoAberto = false;

@@ -75,6 +75,9 @@
           </div>
           <span class="order-customer">
             Cliente: {{ pedido.cliente?.nome }} · Tel: {{ pedido.cliente?.telefone }} · Endereço: {{ pedido.cliente?.endereco }}
+            @if (pedido.pagamento) {
+              · Pagamento: {{ pedido.pagamento.nome }}
+            }
           </span>
           <ul class="order-items">
             @for (item of pedido.pedidos; track $index) {
@@ -142,10 +145,19 @@
     </div>
     <div class="total"><span>Total</span><strong>{{ subtotal | currency:'BRL' }}</strong></div>
     <div class="delivery">
-      <h4>Dados do cliente</h4>
+      <h4>Dados do cliente e pagamento</h4>
       <input [(ngModel)]="entrega.nome" placeholder="Nome do cliente *" required>
       <input [(ngModel)]="entrega.telefone" placeholder="Telefone (com DDD) *" required>
       <input [(ngModel)]="entrega.endereco" placeholder="Endereço de entrega completo *" required>
+      @if (pagamentos.length > 0) {
+        <select [(ngModel)]="pagamentoSelecionadoId" aria-label="Forma de pagamento">
+          @for (pagamento of pagamentos; track pagamento.id) {
+            <option [ngValue]="pagamento.id">
+              {{ pagamento.nome }} ({{ pagamento.parcelas }}x{{ pagamento.taxa > 0 ? ' · Taxa ' + pagamento.taxa + '%' : ' · Sem taxa' }})
+            </option>
+          }
+        </select>
+      }
       <button class="primary full" (click)="finalizar()">Registrar pedido</button>
     </div>
   </aside>
